@@ -977,7 +977,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Panode</string>
+              <string>PA</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
