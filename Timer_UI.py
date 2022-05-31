@@ -39,9 +39,9 @@ TIMER_PERIOD = 300  # ms
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self):
         # Initialization of the superclass
-        super(MainWindow, self).__init__(parent)
+        super(MainWindow, self).__init__(None)
         # logging config
         self.logger = config_logger()
         # members definition
