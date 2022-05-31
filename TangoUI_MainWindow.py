@@ -4,21 +4,30 @@ Created on Jul 1, 200
 
 @author: sanin
 """
-import sys
+import logging
+import time
 from threading import Timer
 
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QSize, QPoint
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import uic
 
 # from TangoWidgets.TangoCheckBox import TangoCheckBox
 from TangoWidgets.TangoLED import TangoLED
 from TangoWidgets.TangoLabel import TangoLabel
 from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
-from TangoWidgets.Utils import *
+
+import sys
+sys.path.append('../TangoUtils')
+from config_logger import config_logger
+from log_exception import log_exception
+from Configuration import Configuration
+# from TangoWidgets.Utils import *
+
 
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = 'Tango_UI'
-APPLICATION_VERSION = '0_0'
+APPLICATION_VERSION = '0.0'
 CONFIG_FILE = APPLICATION_NAME + '.json'
 UI_FILE = APPLICATION_NAME + '.ui'
 
@@ -33,7 +42,7 @@ class TangoUI_MainWindow(QMainWindow):
         # Default logging config
         self.logger = config_logger(level=loglevel)
         # Default attributes definition
-        self.config = {}
+        self.config = Configuration(CONFIG_FILE)
         self.widgets = []
         self.n = 0
         self.elapsed = 0.0
@@ -45,7 +54,7 @@ class TangoUI_MainWindow(QMainWindow):
         self.move(QPoint(50, 50))                   # position
         self.setWindowTitle(APPLICATION_NAME)       # title
         # Restore config
-        self.restore_config(self.config_file)
+        self.restore_config()
         # Load the UI
         uic.loadUi(self.ui_file, self)
         # Create widgets
@@ -71,20 +80,17 @@ class TangoUI_MainWindow(QMainWindow):
                     widget = self.create_widget(item['class'], item['attribute'], item['widget'])
                     self.widgets.append(widget)
                 except:
-                    self.logger.warning('Error creating TangoWidget')
-                    self.logger.debug('Exception:', exc_info=True)
+                    log_exception('Error creating TangoWidget')
         except:
-            self.logger.warning('Exception filling TangoWidgets')
-            self.logger.debug('Info:', exc_info=True)
+            log_exception('Exception filling TangoWidgets')
         return
 
     def on_quit(self):
         # Save settings on exit
-        self.save_config(self.config_file)
+        self.save_config()
         self.timer.cancel()
 
     def timer_handler(self):
-        self.elapsed = 0.0
         t0 = time.time()
         if len(self.widgets) <= 0:
             return
@@ -94,16 +100,16 @@ class TangoUI_MainWindow(QMainWindow):
             if time.time() - t0 > TIMER_LIMIT:
                 break
         self.n = 0
-        self.elapsed = time.time() - self.elapsed
+        self.elapsed = time.time() - t0
 
-    def restore_config(self, file_name='config.json'):
-        self.config = {}
+    def restore_config(self):
+        # self.config = {}
         try:
             # Open and read config file
-            with open(file_name, 'r') as configfile:
-                s = configfile.read()
-            # Interpret file contents by json
-            self.config = json.loads(s)
+            # with open(file_name, 'r') as configfile:
+            #     s = configfile.read()
+            # # Interpret file contents by json
+            # self.config = json.loads(s)
             # Restore log level
             if 'log_level' in self.config:
                 v = self.config['log_level']
@@ -119,27 +125,26 @@ class TangoUI_MainWindow(QMainWindow):
             if 'timer_period' in self.config:
                 self.timer_period = self.config['timer_period']
             # OK message
-            self.logger.info('Configuration restored from %s' % file_name)
+            self.logger.info('Configuration restored')
         except:
-            self.logger.warning('Configuration restore error from %s' % file_name)
-            self.logger.debug('Exception:', exc_info=True)
+            log_exception('Configuration restore error')
         return self.config
 
-    def save_config(self, file_name='config.json'):
+    def save_config(self):
         try:
             # Save current window size and position
             p = self.pos()
             s = self.size()
             self.config['main_window'] = {'size': (s.width(), s.height()), 'position': (p.x(), p.y())}
             # Write to file
-            with open(file_name, 'w') as configfile:
-                configfile.write(json.dumps(self.config, indent=4))
+            self.config.write()
+            # with open(file_name, 'w') as configfile:
+            #     configfile.write(json.dumps(self.config, indent=4))
             # OK message
-            self.logger.info('Configuration saved to %s' % file_name)
+            self.logger.info('Configuration saved to %s')
             return True
         except:
-            self.logger.warning('Error saving configuration to %s' % file_name)
-            self.logger.debug('Exception:', exc_info=True)
+            log_exception('Error saving configuration to %s')
             return False
 
 
