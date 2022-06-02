@@ -127,11 +127,12 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_start', self.spinBox_34),  # adc start
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),   # adc stop
         ]
-        # timer on LED
+        # LEDs
         self.timer_on_led = Timer_on_LED('binp/nbi/timing/channel_state0', self.pushButton_29)  # timer on led
         self.rdwdgts.append(self.timer_on_led)
         self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
         self.rdwdgts.append(self.anode_power_led)
+        #
         self.timer_device = self.timer_on_led.attribute.device_proxy
         # additional decorations
         self.single_periodical_callback(self.comboBox.currentIndex())
@@ -142,6 +143,8 @@ class MainWindow(QMainWindow):
         self.pushButton_3.clicked.connect(self.show_more_button_clicked)  # show more button
         self.pushButton_2.clicked.connect(self.execute_button_clicked)  # execute button
         self.pushButton_4.clicked.connect(self.show_hide_interlocks)
+        self.pushButton_5.clicked.connect(self.show_more_protection_button_clicked)
+        self.pushButton_8.clicked.connect(self.show_less_protection_button_clicked)
         self.show_hide_interlocks()
         # Defile callback task and start timer
         self.timer = QTimer()
@@ -235,6 +238,19 @@ class MainWindow(QMainWindow):
             self.pushButton.setText('Stop')
             self.comboBox.tango_widget.callback(value)
 
+    def show_more_protection_button_clicked(self, value):
+        self.stackedWidget_2.setCurrentIndex(0)
+
+    def show_less_protection_button_clicked(self, value):
+        self.stackedWidget_2.setCurrentIndex(1)
+
+    def update_ready_led(self):
+        if self.pushButton_34.isVisible():
+            if self.check_protection_interlock():
+                self.pushButton_34.setChecked(True)
+            else:
+                self.pushButton_34.setChecked(False)
+
     def run_button_clicked(self, value):
         if self.comboBox.currentIndex() == 0:   # single
             if self.timer_on_led.value:   # pulse is on
@@ -287,8 +303,9 @@ class MainWindow(QMainWindow):
         try:
             self.remained = self.spinBox.value() - int(self.label_3.text())
         except:
-            self.remained = 0.0
+            self.remained = -1.0
         self.label_5.setText('%d s' % self.remained)
+        self.update_ready_led()
         # main loop updating widgets
         count = 0
         while time.time() - t0 < TIMER_PERIOD/2000.0:
@@ -301,8 +318,7 @@ class MainWindow(QMainWindow):
                 self.n = 0
             count += 1
             if count == max(len(self.rdwdgts), len(self.wtwdgts)):
-                self.elapsed = time.time() - t0
-                return
+                break
             self.elapsed = time.time() - t0
 
 

@@ -50,8 +50,8 @@ class TangoAttribute:
         self.write_call_id = None
         self.read_time = 0.0
         self.write_time = 0.0
-        self.read_timeout = 5.0
-        self.write_timeout = 5.0
+        self.read_timeout = 3.5
+        self.write_timeout = 3.5
         self.timeout_count = 0
         self.timeout_count_limit = 3
         self.force_read = False
@@ -163,17 +163,10 @@ class TangoAttribute:
                 self.read_async()
             self.timeout_count = 0
         except tango.AsynReplyNotArrived:
-            # msg = 'AsynReplyNotArrived for %s' % self.full_name
-            # self.logger.debug(msg)
             if time.time() - self.read_time > self.read_timeout:
-                msg = 'Timeout reading %s' % self.full_name
-                self.logger.warning(msg)
-                self.read_time = time.time()
-                self.timeout_count += 1
-                if self.timeout_count >= self.timeout_count_limit:
-                    self.read_call_id = None
-                    self.disconnect()
-                    self.timeout_count = 0
+                self.logger.warning('Timeout reading %s', self.full_name)
+                self.read_call_id = None
+                self.disconnect()
                 raise
         except TangoAttributeConnectionFailed:
             self.read_call_id = None
@@ -201,18 +194,13 @@ class TangoAttribute:
         self.read_call_id = None
 
     def read_async(self):
-        if self.read_call_id is None:
-            # no read request before, so send it
-            self.read_call_id = self.device_proxy.read_attribute_asynch(self.attribute_name)
-            self.read_time = time.time()
-            # use previously read result and return
-            return
-        # check for read request complete (Exception if not completed or error)
-        self.read_result = self.device_proxy.read_attribute_reply(self.read_call_id)
+        if self.read_call_id is not None:
+            # check if read request complete (Exception if not completed or error)
+            self.read_result = self.device_proxy.read_attribute_reply(self.read_call_id)
         # new read request
         self.read_call_id = self.device_proxy.read_attribute_asynch(self.attribute_name)
         self.read_time = time.time()
-        msg = '%s read in %fs' % (self.full_name, time.time() - self.read_time)
+        # msg = '%s read in %fs' % (self.full_name, time.time() - self.read_time)
         # self.logger.debug(msg)
 
     def write(self, value, sync=None):
@@ -229,17 +217,11 @@ class TangoAttribute:
             else:
                 self.write_async(wvalue)
         except tango.AsynReplyNotArrived:
-            # msg = 'AsynReplyNotArrived for %s' % self.full_name
-            # self.logger.debug(msg)
             if time.time() - self.write_time > self.write_timeout:
                 msg = 'Timeout writing %s' % self.full_name
                 self.logger.warning(msg)
-                self.write_time = time.time()
-                self.timeout_count += 1
-                if self.timeout_count >= self.timeout_count_limit:
-                    self.write_call_id = None
-                    self.disconnect()
-                    self.timeout_count = 0
+                self.write_call_id = None
+                self.disconnect()
                 raise
         except TangoAttributeConnectionFailed:
             msg = 'Attribute %s write TangoAttributeConnectionFailed' % self.full_name
