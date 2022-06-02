@@ -131,7 +131,7 @@ class MainWindow(QMainWindow):
         self.timer_on_led = Timer_on_LED('binp/nbi/timing/channel_state0', self.pushButton_29)  # timer on led
         self.rdwdgts.append(self.timer_on_led)
         self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
-        self.rdwdgts.append(self.adode_power_led)
+        self.rdwdgts.append(self.anode_power_led)
         self.timer_device = self.timer_on_led.attribute.device_proxy
         # additional decorations
         self.single_periodical_callback(self.comboBox.currentIndex())
