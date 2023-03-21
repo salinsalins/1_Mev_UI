@@ -4,8 +4,9 @@ Created on Jul 28, 2019
 
 @author: sanin
 """
-
+import sys; sys.path.append('../TangoUtils')
 import os.path
+import logging
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic

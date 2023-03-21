@@ -5,15 +5,15 @@ Created on Jan 1, 2020
 @author: sanin
 """
 
-import sys
+import sys; sys.path.append('../TangoUtils')
 import time
+import logging
 
 from PyQt5.QtWidgets import QWidget
 import tango
 
-from .Utils import *
 from .TangoAttribute import TangoAttribute, TangoAttributeConnectionFailed
-
+from config_logger import *
 
 class TangoWidget:
     ERROR_TEXT = '****'

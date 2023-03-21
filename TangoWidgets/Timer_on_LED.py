@@ -28,7 +28,7 @@ class Timer_on_LED(TangoLED):
         try:
             avs = timer_device.read_attributes(self.timer_state_channels)
         except:
-            pass
+            return False
         state = False
         for av in avs:
             state = state or av.value
