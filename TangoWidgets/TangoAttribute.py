@@ -4,7 +4,7 @@ Created on Feb 4, 2020
 
 @author: sanin
 """
-
+import logging
 import sys
 import time
 
@@ -12,7 +12,12 @@ from PyQt5.QtWidgets import QWidget
 import tango
 from tango import DeviceProxy, GreenMode
 
-from .Utils import *
+from TangoWidgets.Utils import split_attribute_name
+from config_logger import config_logger
+from log_exception import log_exception
+
+
+# from .Utils import *
 
 
 class TangoAttributeConnectionFailed(tango.ConnectionFailed):
@@ -20,14 +25,7 @@ class TangoAttributeConnectionFailed(tango.ConnectionFailed):
 
 
 class TangoAttribute:
-    devices = {}
-    attributes = {}
     reconnect_timeout = 5.0
-
-    # def __new__(cls, name, *args, **kwargs):
-    #     if name in TangoAttribute.attributes:
-    #         return TangoAttribute.attributes[name]
-    #     return super(TangoAttribute, cls).__new__(cls)
 
     def __init__(self, name: str, level=logging.DEBUG, readonly=False, use_history=True):
         self.full_name = str(name)
@@ -57,7 +55,6 @@ class TangoAttribute:
         self.force_read = False
         self.sync_read = False
         self.sync_write = True
-        TangoAttribute.attributes[self.full_name] = self
 
     def connect(self):
         try:
@@ -99,9 +96,10 @@ class TangoAttribute:
                 pt = TangoAttribute.devices[self.device_name].ping()
                 dp = TangoAttribute.devices[self.device_name]
                 self.logger.debug('Device %s for %s exists, ping=%ds' % (self.device_name, self.attribute_name, pt))
+            except KeyboardInterrupt:
+                raise
             except:
-                self.logger.warning('Exception %s connecting to %s' % (sys.exc_info()[0], self.device_name))
-                self.logger.debug('Exception:', exc_info=True)
+                log_exception(self.logger )
                 dp = None
                 TangoAttribute.devices[self.device_name] = dp
         if dp is None:
@@ -266,3 +264,9 @@ class TangoAttribute:
         except:
             txt = str(self.value())
         return txt
+
+
+if __name__ == '__main__':
+    an = 'sys/test/1/double_scalar'
+    attr = TangoAttribute(an)
+    attr.read()

@@ -7,6 +7,7 @@ Created on Jul 28, 2019
 
 import os.path
 import sys
+if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
