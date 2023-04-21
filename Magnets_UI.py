@@ -4,6 +4,9 @@ Created on Jul 28, 2019
 
 @author: sanin
 """
+import sys
+if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
+
 from threading import Timer
 
 from PyQt5.QtWidgets import QApplication
