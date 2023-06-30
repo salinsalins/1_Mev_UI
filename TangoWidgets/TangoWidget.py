@@ -29,31 +29,6 @@ class TangoWidget:
         self.update_dt = 0.0
         # create attribute proxy
         self.attribute = TangoAttribute(name, level=level, readonly=readonly)
-
-        # empty set value function
-        self.set_value_function = lambda x: None
-        # dont set value from non-scalr attribute
-        if self.attribute.is_scalar():
-            # set widget value
-            if hasattr(self.widget, 'setValue'):
-                self.set_value_function = self.widget.setValue
-            elif hasattr(self.widget, 'setChecked'):
-                self.set_value_function = self.widget.setChecked
-            elif hasattr(self.widget, 'setText'):
-                self.set_value_function = self.widget.setText
-
-        # empty get value function
-        self.get_value_function = lambda: None
-        # dont get value from non-scalr attribute
-        if self.attribute.is_scalar():
-            # get widget value
-            if hasattr(self.widget, 'value'):
-                self.get_value_function = self.widget.value
-            elif hasattr(self.widget, 'getChecked'):
-                self.get_value_function = self.widget.getChecked
-            elif hasattr(self.widget, 'getText'):
-                self.get_value_function = self.widget.getText
-
         # first update with set widget value from attribute
         self.update(decorate_only=False)
 
@@ -91,13 +66,18 @@ class TangoWidget:
         return True
 
     def set_widget_value(self):
-        if not self.attribute.is_valid():
+        if not (self.attribute.is_scalar() and self.attribute.is_valid()):
             # dont set value from invalid attribute
             return
         # block update events for widget
         bs = self.widget.blockSignals(True)
         # set widget value
-        self.set_value_function(self.attribute.value())
+        if hasattr(self.widget, 'setValue'):
+            self.widget.setValue(self.attribute.value())
+        elif hasattr(self.widget, 'setChecked'):
+            self.widget.setChecked(self.attribute.value())
+        elif hasattr(self.widget, 'setText'):
+            self.widget.setText(self.attribute.text())
         # restore update events for widget
         self.widget.blockSignals(bs)
 
