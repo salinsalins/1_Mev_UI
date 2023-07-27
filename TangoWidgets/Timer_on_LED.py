@@ -1,11 +1,10 @@
 from PyQt5.QtWidgets import QPushButton
-from .TangoAttribute import TangoAttribute
-from.TangoLED import TangoLED
+from .TangoLED import TangoLED
 
 
 class Timer_on_LED(TangoLED):
-    def __init__(self, name, widget: QPushButton):
-        self.timer_state_channels = ['channel_state'+str(k) for k in range(12)]
+    def __init__(self, name, widget: QPushButton, number_of_channels=12):
+        self.timer_state_channels = ['channel_state'+str(k) for k in range(number_of_channels)]
         self.value = False
         super().__init__(name, widget)
 
@@ -31,5 +30,5 @@ class Timer_on_LED(TangoLED):
             pass
         state = False
         for av in avs:
-            state = state or av.value
+            state = bool(av.value) or state
         return state

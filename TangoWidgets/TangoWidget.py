@@ -11,6 +11,7 @@ import time
 from PyQt5.QtWidgets import QWidget
 import tango
 
+from log_exception import log_exception
 from .Utils import *
 from .TangoAttribute import TangoAttribute, TangoAttributeConnectionFailed
 
@@ -93,8 +94,7 @@ class TangoWidget:
             self.set_attribute_value()
             self.decorate()
         except:
-            self.logger.info('Exception: %s' % sys.exc_info()[1])
-            self.logger.debug('Exception Info:', exc_info=True)
+            log_exception(self.logger)
             self.set_attribute_value()
             self.decorate()
         self.update_dt = time.time() - t0

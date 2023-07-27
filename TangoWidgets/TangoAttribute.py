@@ -25,9 +25,9 @@ class TangoAttributeConnectionFailed(tango.ConnectionFailed):
 
 
 class TangoAttribute:
-    reconnect_timeout = 5.0
-
+    devices = {}
     def __init__(self, name: str, level=logging.DEBUG, readonly=False, use_history=True):
+        self.time = time.time()
         self.full_name = str(name)
         self.use_history = use_history
         self.device_name, self.attribute_name = split_attribute_name(self.full_name)
@@ -36,13 +36,11 @@ class TangoAttribute:
         self.config = None
         self.format = None
         self.coeff = 1.0
+        self.reconnect_timeout = 5.0
         self.connected = False
         self.readonly = readonly
         # configure logging
         self.logger = config_logger(level=level)
-        # connect attribute
-        self.connect()
-        self.time = time.time()
         # async operation vars
         self.read_call_id = None
         self.write_call_id = None
@@ -55,6 +53,8 @@ class TangoAttribute:
         self.force_read = False
         self.sync_read = False
         self.sync_write = True
+        # connect attribute
+        self.connect()
 
     def connect(self):
         try:
@@ -62,12 +62,15 @@ class TangoAttribute:
             self.set_config()
             self.read_result = self.device_proxy.read_attribute(self.attribute_name)
             self.connected = True
-            self.time = 0.0
+            self.time = time.time()
             self.logger.info('Attribute %s has been connected' % self.full_name)
+            return True
+        except KeyboardInterrupt:
+            raise
         except:
+            log_exception('Can not connect attribute %s' % self.full_name)
             self.disconnect()
-            self.logger.warning('Can not connect attribute %s' % self.full_name)
-            self.logger.debug('Exception connecting attribute %s' % self.full_name, exc_info=True)
+            return False
 
     def disconnect(self):
         self.time = time.time()
@@ -78,39 +81,42 @@ class TangoAttribute:
         self.logger.debug('Attribute %s has been disconnected', self.full_name)
 
     def reconnect(self):
+        if self.connected:
+            return True
         if self.device_name in TangoAttribute.devices and TangoAttribute.devices[self.device_name] is not self.device_proxy:
             self.logger.debug('Device proxy changed for %s' % self.full_name)
             if time.time() - self.time > self.reconnect_timeout:
                 self.connect()
         if self.connected:
-            return
+            return True
         if time.time() - self.time > self.reconnect_timeout:
             self.logger.debug('Reconnection timeout exceeded for %s' % self.full_name)
             self.connect()
+        return self.connected
 
     def create_device_proxy(self):
-        dp = None
         if self.device_name in TangoAttribute.devices and TangoAttribute.devices[self.device_name] is not None:
             try:
                 # check if device is alive
                 pt = TangoAttribute.devices[self.device_name].ping()
-                dp = TangoAttribute.devices[self.device_name]
-                self.logger.debug('Device %s for %s exists, ping=%ds' % (self.device_name, self.attribute_name, pt))
+                # dp = TangoAttribute.devices[self.device_name]
+                self.logger.debug('Device %s for %s exists, ping=%d' % (self.device_name, self.attribute_name, pt))
             except KeyboardInterrupt:
                 raise
             except:
-                log_exception(self.logger )
-                dp = None
-                TangoAttribute.devices[self.device_name] = dp
-        if dp is None:
-            try:
-                dp = tango.DeviceProxy(self.device_name)
-                dp.ping()
-                self.logger.info('Device proxy for %s has been created' % self.device_name)
-            except:
-                self.logger.warning('Device %s creation exception' % self.device_name)
-                dp = None
-            TangoAttribute.devices[self.device_name] = dp
+                self.logger.info(self.logger, 'Device %s can not be reached', self.device_name)
+                # TangoAttribute.devices[self.device_name] = None
+            return TangoAttribute.devices[self.device_name]
+        try:
+            dp = tango.DeviceProxy(self.device_name)
+            # dp.ping()
+            self.logger.info('Device proxy for %s has been created' % self.device_name)
+        except KeyboardInterrupt:
+            raise
+        except:
+            log_exception('Device %s creation exception' % self.device_name)
+            dp = None
+        TangoAttribute.devices[self.device_name] = dp
         return dp
 
     def set_config(self):
@@ -118,6 +124,8 @@ class TangoAttribute:
         self.format = self.config.format
         try:
             self.coeff = float(self.config.display_unit)
+        except KeyboardInterrupt:
+            raise
         except:
             self.coeff = 1.0
         self.readonly = self.readonly or self.is_readonly()
@@ -170,6 +178,8 @@ class TangoAttribute:
             self.read_call_id = None
             msg = 'Attribute %s read TangoAttributeConnectionFailed' % self.full_name
             self.logger.info(msg)
+            raise
+        except KeyboardInterrupt:
             raise
         except:
             msg = 'Attribute %s read Exception %s' % (self.full_name, sys.exc_info()[0])
@@ -225,6 +235,8 @@ class TangoAttribute:
             msg = 'Attribute %s write TangoAttributeConnectionFailed' % self.full_name
             self.logger.info(msg)
             raise
+        except KeyboardInterrupt:
+            raise
         except:
             msg = 'Attribute %s write Exception %s' % (self.full_name, sys.exc_info()[0])
             self.logger.info(msg)
@@ -261,6 +273,8 @@ class TangoAttribute:
     def text(self):
         try:
             txt = self.format % self.value()
+        except KeyboardInterrupt:
+            raise
         except:
             txt = str(self.value())
         return txt

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>432</width>
-    <height>711</height>
+    <height>756</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1375,6 +1375,9 @@
          <property name="bottomMargin">
           <number>12</number>
          </property>
+         <property name="spacing">
+          <number>6</number>
+         </property>
          <item row="9" column="1">
           <widget class="QCheckBox" name="checkBox_16">
            <property name="sizePolicy">
@@ -1608,7 +1611,7 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="3">
+         <item row="14" column="3" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
           <widget class="QPushButton" name="pushButton_2">
            <property name="enabled">
             <bool>true</bool>
@@ -2274,11 +2277,6 @@
              <weight>50</weight>
              <bold>false</bold>
             </font>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QCheckBox::indicator:checked {image:url(:/checked_red.png);
-}
-QCheckBox::indicator:unchecked {image: url(:/unchecked_red.png);}</string>
            </property>
            <property name="text">
             <string/>
@@ -3229,7 +3227,7 @@ QCheckBox::indicator:unchecked {image: url(:/unchecked_red.png);}</string>
            </property>
           </widget>
          </item>
-         <item row="14" column="0">
+         <item row="14" column="0" alignment="Qt::AlignRight|Qt::AlignVCenter">
           <widget class="QLabel" name="label_45">
            <property name="enabled">
             <bool>true</bool>
@@ -3260,14 +3258,14 @@ QCheckBox::indicator:unchecked {image: url(:/unchecked_red.png);}</string>
             </font>
            </property>
            <property name="text">
-            <string>Action:</string>
+            <string>Action</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
-         <item row="14" column="1" colspan="2">
+         <item row="14" column="1" colspan="2" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
           <widget class="QComboBox" name="comboBox_2">
            <property name="enabled">
             <bool>true</bool>
@@ -3281,13 +3279,13 @@ QCheckBox::indicator:unchecked {image: url(:/unchecked_red.png);}</string>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>0</height>
+             <height>25</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>16777215</width>
-             <height>16777215</height>
+             <height>25</height>
             </size>
            </property>
            <item>

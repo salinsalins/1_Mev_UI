@@ -23,7 +23,6 @@ from TangoWidgets.Timer_on_LED import Timer_on_LED
 from TangoWidgets.RF_ready_LED import RF_ready_LED
 from TangoWidgets.Lauda_ready_LED import Lauda_ready_LED
 
-sys.path.append('../TangoUtils')
 from config_logger import config_logger
 from log_exception import log_exception
 from TangoWidgets.Utils import *
@@ -55,7 +54,7 @@ class MainWindow(QMainWindow):
         self.resize(QSize(480, 640))                 # size
         self.move(QPoint(50, 50))                    # position
         self.setWindowTitle(APPLICATION_NAME)        # title
-        self.setWindowIcon(QtGui.QIcon('icon.png'))  # icon
+        # self.setWindowIcon(QtGui.QIcon('icon.png'))  # icon
         # Welcome message
         print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
         #

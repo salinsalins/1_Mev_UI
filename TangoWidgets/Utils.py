@@ -239,12 +239,6 @@ def get_tango_device_attribute_property(device_name: str, attr_name: str, prop_n
     return prop
 
 
-def log_exception(self, text='Exception: '):
-    msg = text + str(sys.exc_info()[1])
-    self.logger.warning(msg)
-    self.logger.debug(msg, exc_info=True)
-
-
 def create_widget(self, class_name, attribute, control):
     try:
         widget = getattr(self, control)
