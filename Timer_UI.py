@@ -223,15 +223,10 @@ class MainWindow(QMainWindow):
     #         self.resize(self.gridLayout_2.sizeHint())
 
     def resize_main_window(self):
-        # if self.pushButton_3.isChecked():
-            self.frame.setVisible(True)
-            # self.resize(QSize(418, 751))
-            self.resize(QSize(self.gridLayout_2.sizeHint().width(),
-                              self.gridLayout_2.sizeHint().height()+self.gridLayout_3.sizeHint().height()))
-        # else:
-        #     self.frame.setVisible(False)
-        #     # self.resize(QSize(418, 124))
-        #     self.resize(self.gridLayout_2.sizeHint())
+        self.frame.setVisible(True)
+        # self.resize(QSize(418, 751))
+        self.resize(QSize(self.gridLayout_2.sizeHint().width(),
+                          self.gridLayout_2.sizeHint().height()+self.gridLayout_3.sizeHint().height()))
 
     def single_periodical_callback(self, value):
         if value == 0:  # single
@@ -290,14 +285,15 @@ class MainWindow(QMainWindow):
         n = 0
         for k in range(12):
             try:
-                self.timer_on_led.attribute.device_proxy.write_attribute('channel_enable' + str(k), False)
+                self.timer_device.write_attribute('channel_enable' + str(k), False)
             except KeyboardInterrupt:
                raise
             except:
                 n += 1
         if n <= 0:
+            QMessageBox.critical(self, 'Emergency', 'Shot has been interrupted', QMessageBox.Ok)
             return
-        self.logger.warbibg("Can not stop pulse")
+        self.logger.warnibg("Can not stop pulse")
         self.logger.debug("Exception ", exc_info=True)
 
     def onQuit(self) :
