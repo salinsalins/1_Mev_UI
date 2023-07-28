@@ -26,6 +26,8 @@ class Timer_on_LED(TangoLED):
         avs = []
         try:
             avs = timer_device.read_attributes(self.timer_state_channels)
+        except KeyboardInterrupt:
+           raise
         except:
             pass
         state = False

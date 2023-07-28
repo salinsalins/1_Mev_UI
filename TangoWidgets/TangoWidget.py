@@ -93,6 +93,8 @@ class TangoWidget:
             # self.logger.info('Exception: %s' % sys.exc_info()[1])
             self.set_attribute_value()
             self.decorate()
+        except KeyboardInterrupt:
+           raise
         except:
             log_exception(self.logger)
             self.set_attribute_value()
@@ -127,6 +129,8 @@ class TangoWidget:
             return
         try:
             self.write(value)
+        except KeyboardInterrupt:
+           raise
         except:
             self.logger.info('Exception: %s' % sys.exc_info()[1])
             self.logger.debug('Exception Info:', exc_info=True)
@@ -135,10 +139,10 @@ class TangoWidget:
         result = None
         if hasattr(self.widget, 'value'):
             result = self.widget.value()
-        elif hasattr(self.widget, 'getChecked'):
-            result = self.widget.getChecked()
-        elif hasattr(self.widget, 'getText'):
-            result = self.widget.getText()
+        elif hasattr(self.widget, 'checkState'):
+            result = self.widget.checkState()
+        elif hasattr(self.widget, 'text'):
+            result = self.widget.text()
         return result
 
     def callback(self, value):
@@ -149,7 +153,10 @@ class TangoWidget:
             self.write(value)
             self.read(True)
             self.decorate()
+        except KeyboardInterrupt:
+           raise
         except:
+            # log_exception('Exception in callback')
             self.logger.warning('Exception in callback')
             self.logger.debug('Exception Info:', exc_info=True)
             self.decorate()

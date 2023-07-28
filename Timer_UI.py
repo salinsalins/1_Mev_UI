@@ -28,7 +28,7 @@ from log_exception import log_exception
 from TangoWidgets.Utils import *
 
 ORGANIZATION_NAME = 'BINP'
-APPLICATION_NAME = 'Timer_UI'
+APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
 APPLICATION_NAME_SHORT = APPLICATION_NAME
 APPLICATION_VERSION = '2.2'
 CONFIG_FILE = APPLICATION_NAME_SHORT + '.json'
@@ -86,12 +86,12 @@ class MainWindow(QMainWindow):
         # read write attributes TangoWidgets list
         self.wtwdgts = [
             # timer
-            TangoAbstractSpinBox('binp/nbi/timing/Period', self.spinBox),  # period
-            TangoComboBox('binp/nbi/timing/Start_mode', self.comboBox),  # single/periodical
-            TangoCheckBox('binp/nbi/timing/channel_enable0', self.checkBox_8),  # ch0
-            TangoCheckBox('binp/nbi/timing/channel_enable1', self.checkBox_9),  # ch1
-            TangoCheckBox('binp/nbi/timing/channel_enable2', self.checkBox_10),  # ch2
-            TangoCheckBox('binp/nbi/timing/channel_enable3', self.checkBox_11),  # ch3
+            TangoAbstractSpinBox('binp/nbi/timing/Period', self.spinBox),  # period             0
+            TangoComboBox('binp/nbi/timing/Start_mode', self.comboBox),  # single/periodical    1
+            TangoCheckBox('binp/nbi/timing/channel_enable0', self.checkBox_8),  # ch0           2
+            TangoCheckBox('binp/nbi/timing/channel_enable1', self.checkBox_9),  # ch1           3
+            TangoCheckBox('binp/nbi/timing/channel_enable2', self.checkBox_10),  # ch2          4
+            TangoCheckBox('binp/nbi/timing/channel_enable3', self.checkBox_11),  # ch3          5
             TangoCheckBox('binp/nbi/timing/channel_enable4', self.checkBox_12),  # ch4
             TangoCheckBox('binp/nbi/timing/channel_enable5', self.checkBox_13),  # ch5
             TangoCheckBox('binp/nbi/timing/channel_enable6', self.checkBox_14),  # ch6
@@ -99,8 +99,8 @@ class MainWindow(QMainWindow):
             TangoCheckBox('binp/nbi/timing/channel_enable8', self.checkBox_16),  # ch8
             TangoCheckBox('binp/nbi/timing/channel_enable9', self.checkBox_17),  # ch9
             TangoCheckBox('binp/nbi/timing/channel_enable10', self.checkBox_18),  # ch10
-            TangoCheckBox('binp/nbi/timing/channel_enable11', self.checkBox_19),  # ch11
-            TangoAbstractSpinBox('binp/nbi/timing/pulse_start0', self.spinBox_10),  # ch1
+            TangoCheckBox('binp/nbi/timing/channel_enable11', self.checkBox_19),  # ch11        13
+            TangoAbstractSpinBox('binp/nbi/timing/pulse_start0', self.spinBox_10),  # ch1       14
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start1', self.spinBox_12),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start2', self.spinBox_14),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start3', self.spinBox_16),  # ch
@@ -111,8 +111,8 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start8', self.spinBox_26),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start9', self.spinBox_28),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start10', self.spinBox_30),  # ch
-            TangoAbstractSpinBox('binp/nbi/timing/pulse_start11', self.spinBox_32),  # ch11
-            TangoAbstractSpinBox('binp/nbi/timing/pulse_stop0', self.spinBox_11),  # ch0
+            TangoAbstractSpinBox('binp/nbi/timing/pulse_start11', self.spinBox_32),  # ch11     25
+            TangoAbstractSpinBox('binp/nbi/timing/pulse_stop0', self.spinBox_11),  # ch0        26
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop1', self.spinBox_13),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop2', self.spinBox_15),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop3', self.spinBox_17),  # ch
@@ -123,7 +123,7 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop8', self.spinBox_27),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop9', self.spinBox_29),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop10', self.spinBox_31),  # ch
-            TangoAbstractSpinBox('binp/nbi/timing/pulse_stop11', self.spinBox_33),  # ch11
+            TangoAbstractSpinBox('binp/nbi/timing/pulse_stop11', self.spinBox_33),  # ch11      37
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_start', self.spinBox_34),  # adc start
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),   # adc stop
         ]
@@ -132,6 +132,9 @@ class MainWindow(QMainWindow):
         self.rdwdgts.append(self.timer_on_led)
         self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
         self.rdwdgts.append(self.anode_power_led)
+        self.enable_widgets = range(2, 14)
+        self.stop_widgets = range(26, 38)
+        self.elapsed_widget = self.rdwdgts[0]
         #
         self.timer_device = self.timer_on_led.attribute.device_proxy
         # additional decorations
@@ -200,6 +203,8 @@ class MainWindow(QMainWindow):
                 result = exec(s)
                 self.logger.debug('Script %s executed', file_name)
                 self.comboBox_2.setStyleSheet('')
+        except KeyboardInterrupt:
+           raise
         except:
             self.comboBox_2.setStyleSheet('color: red')
             self.logger.warning('Error action execution')
@@ -273,6 +278,8 @@ class MainWindow(QMainWindow):
         for k in range(12):
             try:
                 self.timer_on_led.attribute.device_proxy.write_attribute('channel_enable' + str(k), False)
+            except KeyboardInterrupt:
+               raise
             except:
                 n += 1
         if n <= 0:
@@ -289,8 +296,15 @@ class MainWindow(QMainWindow):
         t0 = time.time()
         if len(self.rdwdgts) <= 0 and len(self.wtwdgts) <= 0:
             return
+        max_time = 0.0
+        for i in range(12):
+            j = self.enable_widgets[i]
+            if self.wtwdgts[j].get_widget_value():
+                k = self.stop_widgets[i]
+                max_time = max(max_time, self.wtwdgts[k].get_widget_value())
         # during pulse
-        if self.timer_on_led.value:   # pulse is on
+        # if self.timer_on_led.value:   # pulse is on
+        if self.elapsed_widget.attribute.value() < max_time/1000.0:
             # pulse ON LED -> ON
             self.pushButton.setStyleSheet('color: red; font: bold')
             self.pushButton.setText('Stop')
@@ -302,6 +316,8 @@ class MainWindow(QMainWindow):
         # remained
         try:
             self.remained = self.spinBox.value() - int(self.label_3.text())
+        except KeyboardInterrupt:
+           raise
         except:
             self.remained = -1.0
         self.label_5.setText('%d s' % self.remained)

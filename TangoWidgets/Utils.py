@@ -20,7 +20,8 @@ import PyQt5.QtGui as QtGui
 import tango
 import tango.server
 
-
+# ^(  +)except:
+# $1except KeyboardInterrupt:\n$1   raise\n$1except:
 def config_logger(name=__name__, level=logging.DEBUG, tango_logging=False):
 
     def tango_handler_emit(logger_handler, record):
@@ -110,6 +111,8 @@ def get_widget_state(obj, config, name=None):
             config[name] = str(obj.toPlainText())
         elif isinstance(obj, QtWidgets.QSpinBox) or isinstance(obj, QtWidgets.QDoubleSpinBox):
             config[name] = obj.value()
+    except KeyboardInterrupt:
+       raise
     except:
         return
 
@@ -139,6 +142,8 @@ def set_widget_state(obj, config, name=None):
             obj.setPlainText(config[name])
         elif isinstance(obj, QtWidgets.QSpinBox) or isinstance(obj, QtWidgets.QDoubleSpinBox):
             obj.setValue(config[name])
+    except KeyboardInterrupt:
+       raise
     except:
         return
 
@@ -169,6 +174,8 @@ def restore_settings(obj, widgets=(), file_name='config.json'):
             set_widget_state(w, obj.config)
         # OK message
         obj.logger.log(logging.INFO, 'Configuration restored from %s' % file_name)
+    except KeyboardInterrupt:
+       raise
     except:
         obj.logger.log(logging.WARNING, 'Configuration restore error from %s' % file_name)
         obj.logger.log(logging.DEBUG, 'Exception:', exc_info=True)
@@ -190,6 +197,8 @@ def save_settings(self, widgets=(), file_name='config.json'):
         # OK message
         self.logger.info('Configuration saved to %s' % file_name)
         return True
+    except KeyboardInterrupt:
+       raise
     except:
         self.logger.log(logging.WARNING, 'Configuration save error to %s' % file_name)
         self.logger.log(logging.DEBUG, 'Exception:', exc_info=True)
@@ -243,6 +252,8 @@ def create_widget(self, class_name, attribute, control):
     try:
         widget = getattr(self, control)
         return globals()[class_name](attribute, widget)
+    except KeyboardInterrupt:
+       raise
     except:
         return None
 
