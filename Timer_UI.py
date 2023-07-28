@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),   # adc stop
         ]
         # LEDs
-        self.timer_on_led = Timer_on_LED('binp/nbi/timing/channel_state0', self.pushButton_29)  # timer on led
+        self.timer_on_led = Timer_on_LED('binp/nbi/timing/pulse_start0', self.pushButton_29)  # timer on led
         self.rdwdgts.append(self.timer_on_led)
         self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
         self.rdwdgts.append(self.anode_power_led)
@@ -143,18 +143,19 @@ class MainWindow(QMainWindow):
         self.comboBox.currentIndexChanged.disconnect(self.comboBox.tango_widget.callback)  # single/periodical combo
         self.comboBox.currentIndexChanged.connect(self.single_periodical_callback)  # single/periodical combo
         self.pushButton.clicked.connect(self.run_button_clicked)  # run button
-        self.pushButton_3.clicked.connect(self.show_more_button_clicked)  # show more button
+        # self.pushButton_3.clicked.connect(self.show_more_button_clicked)  # show more button
         self.pushButton_2.clicked.connect(self.execute_button_clicked)  # execute button
-        self.pushButton_4.clicked.connect(self.show_hide_interlocks)
+        # self.pushButton_4.clicked.connect(self.show_hide_interlocks)
         self.pushButton_5.clicked.connect(self.show_more_protection_button_clicked)
         self.pushButton_8.clicked.connect(self.show_less_protection_button_clicked)
-        self.show_hide_interlocks()
+        # self.show_hide_interlocks()
         # Defile callback task and start timer
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer_handler)
         self.timer.start(TIMER_PERIOD)
         # resize main window
-        self.show_more_button_clicked()
+        # self.show_more_button_clicked()
+        self.resize_main_window()
         # populate comboBOx_2
         scripts = read_folder('scripts')
         truncated = [s.replace('.py', '') for s in scripts]
@@ -183,17 +184,17 @@ class MainWindow(QMainWindow):
                 ((not self.checkBox_22.isChecked()) or self.pushButton_32.isChecked())
         return value
 
-    def show_hide_interlocks(self):
-        if self.pushButton_4.isChecked():
-            self.checkBox_20.show()
-            self.checkBox_21.show()
-            self.checkBox_22.show()
-            self.checkBox_23.show()
-        else:
-            self.checkBox_20.hide()
-            self.checkBox_21.hide()
-            self.checkBox_22.hide()
-            self.checkBox_23.hide()
+    # def show_hide_interlocks(self):
+    #     if self.pushButton_4.isChecked():
+    #         self.checkBox_20.show()
+    #         self.checkBox_21.show()
+    #         self.checkBox_22.show()
+    #         self.checkBox_23.show()
+    #     else:
+    #         self.checkBox_20.hide()
+    #         self.checkBox_21.hide()
+    #         self.checkBox_22.hide()
+    #         self.checkBox_23.hide()
 
     def execute_button_clicked(self):
         try:
@@ -210,16 +211,27 @@ class MainWindow(QMainWindow):
             self.logger.warning('Error action execution')
             self.logger.debug('', exc_info=True)
 
-    def show_more_button_clicked(self):
-        if self.pushButton_3.isChecked():
+    # def show_more_button_clicked(self):
+    #     if self.pushButton_3.isChecked():
+    #         self.frame.setVisible(True)
+    #         # self.resize(QSize(418, 751))
+    #         self.resize(QSize(self.gridLayout_2.sizeHint().width(),
+    #                           self.gridLayout_2.sizeHint().height()+self.gridLayout_3.sizeHint().height()))
+    #     else:
+    #         self.frame.setVisible(False)
+    #         # self.resize(QSize(418, 124))
+    #         self.resize(self.gridLayout_2.sizeHint())
+
+    def resize_main_window(self):
+        # if self.pushButton_3.isChecked():
             self.frame.setVisible(True)
             # self.resize(QSize(418, 751))
             self.resize(QSize(self.gridLayout_2.sizeHint().width(),
                               self.gridLayout_2.sizeHint().height()+self.gridLayout_3.sizeHint().height()))
-        else:
-            self.frame.setVisible(False)
-            # self.resize(QSize(418, 124))
-            self.resize(self.gridLayout_2.sizeHint())
+        # else:
+        #     self.frame.setVisible(False)
+        #     # self.resize(QSize(418, 124))
+        #     self.resize(self.gridLayout_2.sizeHint())
 
     def single_periodical_callback(self, value):
         if value == 0:  # single
@@ -265,6 +277,7 @@ class MainWindow(QMainWindow):
                 if not self.check_protection_interlock():
                     self.logger.error('Shot is rejected')
                     self.pushButton.setStyleSheet('border: 3px solid red')
+                    QMessageBox.critical(self, 'Forbidden', 'Shot is rejected', QMessageBox.Ok)
                     return
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 1)
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 0)
@@ -308,9 +321,13 @@ class MainWindow(QMainWindow):
             # pulse ON LED -> ON
             self.pushButton.setStyleSheet('color: red; font: bold')
             self.pushButton.setText('Stop')
+            self.timer_on_led.value = 1.0
+            self.timer_on_led.set_widget_value()
         else:   # pulse is off
             # pulse ON LED -> OFF
             self.pushButton.setStyleSheet('')
+            self.timer_on_led.value = 0.0
+            self.timer_on_led.set_widget_value()
             if self.comboBox.currentIndex() == 0:
                 self.pushButton.setText('Shoot')
         # remained
@@ -324,7 +341,7 @@ class MainWindow(QMainWindow):
         self.update_ready_led()
         # main loop updating widgets
         count = 0
-        while time.time() - t0 < TIMER_PERIOD/2000.0:
+        while time.time() - t0 < TIMER_PERIOD/1000.00 * 0.8:
             if self.n < len(self.rdwdgts) and self.rdwdgts[self.n].widget.isVisible():
                 self.rdwdgts[self.n].update()
             if self.n < len(self.wtwdgts) and self.wtwdgts[self.n].widget.isVisible():
@@ -335,7 +352,7 @@ class MainWindow(QMainWindow):
             count += 1
             if count == max(len(self.rdwdgts), len(self.wtwdgts)):
                 break
-            self.elapsed = time.time() - t0
+        self.elapsed = time.time() - t0
 
 
 if __name__ == '__main__':
