@@ -21,12 +21,12 @@ class TangoWidget:
     RECONNECT_TIMEOUT = 3.0    # seconds
     DEVICES = {}
 
-    def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG):
-        # configure logging
-        self.logger = config_logger(level=level)
+    def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
         self.name = name
         self.widget = widget
         self.widget.tango_widget = self
+        # configure logging
+        self.logger = config_logger(level=level)
         self.update_dt = 0.0
         # create attribute proxy
         self.attribute = TangoAttribute(name, level=level, readonly=readonly)
@@ -83,7 +83,6 @@ class TangoWidget:
         self.widget.blockSignals(bs)
 
     def update(self, decorate_only=False) -> None:
-        t0 = time.time()
         try:
             self.read()
             if not decorate_only:
@@ -99,7 +98,6 @@ class TangoWidget:
             log_exception(self.logger)
             self.set_attribute_value()
             self.decorate()
-        self.update_dt = time.time() - t0
 
     def decorate(self):
         if not self.attribute.connected:
