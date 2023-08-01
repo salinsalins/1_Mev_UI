@@ -19,7 +19,7 @@ class TangoLED(TangoWidget):
 
     def set_widget_value(self):
         self.widget.setChecked(bool(self.attribute.value()))
-        return self.attribute.value()
+        return bool(self.attribute.value())
 
     def decorate_error(self):
         self.widget.setDisabled(True)
@@ -31,4 +31,5 @@ class TangoLED(TangoWidget):
         self.widget.setDisabled(False)
 
     def callback(self, value=None):
+        self.logger.debug('********************')
         self.set_widget_value()

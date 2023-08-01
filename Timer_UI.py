@@ -148,6 +148,9 @@ class MainWindow(QMainWindow):
         # self.pushButton_4.clicked.connect(self.show_hide_interlocks)
         self.pushButton_5.clicked.connect(self.show_more_protection_button_clicked)
         self.pushButton_8.clicked.connect(self.show_less_protection_button_clicked)
+        # prevent non tango leds from changing color when clicked
+        self.pushButton_34.mouseReleaseEvent = self.absorb_event
+        self.pushButton_29.mouseReleaseEvent = self.absorb_event
         # self.show_hide_interlocks()
         # Defile callback task and start timer
         self.timer = QTimer()
@@ -176,6 +179,9 @@ class MainWindow(QMainWindow):
         #         else:
         #             self.logger.error('Can not lock timer device')
         self.logger.info('\n\n------------ Attribute Config Finished -----------\n')
+
+    def absorb_event(self, ev):
+        pass
 
     def check_protection_interlock(self):
         value = ((not self.checkBox_20.isChecked()) or self.pushButton_30.isChecked()) and \
