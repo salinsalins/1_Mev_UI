@@ -8,8 +8,8 @@ class Lauda_ready_LED(TangoLED):
         self.value = False
         if not name.endswith('/'):
             name += '/'
-        self.valve = TangoAttribute(name + '6230_0')  # output valve
-        super().__init__(name + '6230_7', widget)
+        self.valve = TangoAttribute(name + 'valve_state')  # output valve
+        super().__init__(name + 'pump', widget)
         self.motor = self.attribute  # Lauda pump motor
 
     def read(self, force=False):

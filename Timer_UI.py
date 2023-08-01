@@ -77,9 +77,9 @@ class MainWindow(QMainWindow):
             # pg
             TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31),  # PG offset on
             # lauda
-            # TangoLED('binp/nbi/lauda/6230_7', self.pushButton_30),  # Pump On
-            # TangoLED('binp/nbi/lauda/6230_0', self.pushButton_30),  # Valve
-            Lauda_ready_LED('binp/nbi/lauda/', self.pushButton_30),
+            # TangoLED('binp/nbi/laudapy/6230_7', self.pushButton_30),  # Pump On
+            # TangoLED('binp/nbi/laudapy/6230_0', self.pushButton_30),  # Valve
+            Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30),
             # rf system
             RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32),  # RF system ready
         ]

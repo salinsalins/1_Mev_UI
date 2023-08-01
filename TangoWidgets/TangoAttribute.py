@@ -61,6 +61,8 @@ class TangoAttribute:
         self.time = time.time()
         try:
             self.device_proxy = self.create_device_proxy()
+            if self.device_proxy is None:
+                return False
             self.set_config()
             self.read_result = self.device_proxy.read_attribute(self.attribute_name)
             self.connected = True
@@ -115,10 +117,12 @@ class TangoAttribute:
         except KeyboardInterrupt:
             raise
         except:
-            log_exception('Device %s creation exception' % self.device_name)
+            log_exception('Device %s creation exception: ' % self.device_name, no_info=True)
             return None
 
     def set_config(self):
+        if self.device_proxy is None:
+            return
         self.config = self.device_proxy.get_attribute_config_ex(self.attribute_name)[0]
         self.format = self.config.format
         try:

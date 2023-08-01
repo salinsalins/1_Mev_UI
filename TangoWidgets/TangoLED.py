@@ -31,5 +31,4 @@ class TangoLED(TangoWidget):
         self.widget.setDisabled(False)
 
     def callback(self, value=None):
-        self.logger.debug('********************')
         self.set_widget_value()
