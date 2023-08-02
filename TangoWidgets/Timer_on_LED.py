@@ -1,32 +1,32 @@
 from PyQt5.QtWidgets import QPushButton
 
 from TangoAttribute import TangoAttribute
+from TangoUtils import split_attribute_name
 from log_exception import log_exception
 from .TangoLED import TangoLED
 
 
 class Timer_on_LED(TangoLED):
-    def __init__(self, name, widget: QPushButton, number_of_channels=12):
-        self.timer_state_channels = ['channel_state' + str(k) for k in range(number_of_channels)]
+    def __init__(self, name, widget: QPushButton, elapsed='binp/nbi/adc0/Elapsed'):
+        timer, _ = split_attribute_name(name)
         self.value = False
         self.use_state = False
-        self.elapsed = TangoAttribute('binp/nbi/adc0/Elapsed')
+        self.elapsed = None
+        # self.elapsed = TangoAttribute(elapsed)
         self.enable = []
         self.stop = []
+        self.sate = []
         super().__init__(name, widget)
         al = self.attribute.device_proxy.get_attribute_list()
         al = list(al)
         al.sort()
-        if 'channel_state0' in al:
-            self.use_state = True
-            # self.elapsed = None
-            self.enable = []
-            self.stop = []
-        else:
-            self.use_state = False
-            # self.elapsed = TangoAttribute('binp/nbi/adc0/Elapsed')
-            self.enable = [TangoAttribute('binp/nbi/timing/' + i) for i in al if 'channel_enable' in i]
-            self.stop = [TangoAttribute('binp/nbi/timing/' + i) for i in al if 'pulse_stop' in i]
+        self.enable = [TangoAttribute(timer + '/' + a) for a in al if 'channel_enable' in a]
+        self.stop = [TangoAttribute(timer + '/' + a) for a in al if 'pulse_stop' in a]
+        self.state = [TangoAttribute(timer + '/' + a) for a in al if 'channel_state' in a]
+        self.use_state = len(self.state) > 0
+        if not self.use_state:
+            self.elapsed = TangoAttribute(elapsed)
+
 
     def read(self, force=False):
         self.value = self.check_state()
@@ -46,7 +46,7 @@ class Timer_on_LED(TangoLED):
         if self.use_state:
             avs = []
             try:
-                avs = timer_device.read_attributes(self.timer_state_channels)
+                avs = timer_device.read_attributes(self.state)
             except KeyboardInterrupt:
                 raise
             except:
@@ -54,10 +54,9 @@ class Timer_on_LED(TangoLED):
             state = False
             for av in avs:
                 state = bool(av.value) or state
-            self.logger.debug('%s %s', state)
+            # self.logger.debug('%s %s', state)
             return state
         else:
-            # return False
             max_time = 0.0
             try:
                 for i in range(len(self.enable)):

@@ -21,7 +21,7 @@ class TangoAbstractSpinBox(TangoWriteWidget):
         self.widget.stepBy = self.step_by
         if not readonly:
             self.widget.valueChanged.connect(self.callback)
-            self.widget.last_keyPressEvent = self.widget.keyPressEvent
+            self.widget.old_keyPressEvent = self.widget.keyPressEvent
             self.widget.keyPressEvent = self.keyPressEvent
 
     # def update(self, decorate_only=False):
@@ -44,7 +44,7 @@ class TangoAbstractSpinBox(TangoWriteWidget):
         self.widget.blockSignals(bs)
 
     def keyPressEvent(self, e):
-        self.widget.last_keyPressEvent(e)
+        self.widget.old_keyPressEvent(e)
         k = e.key()
         if k == QtCore.Qt.Key_Enter or k == QtCore.Qt.Key_Return:
             self.callback(self.widget.value())

@@ -132,11 +132,12 @@ class MainWindow(QMainWindow):
         self.rdwdgts.append(self.timer_on_led)
         self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
         self.rdwdgts.append(self.anode_power_led)
+        # timer widgets groups
+        self.timer_device = self.timer_on_led.attribute.device_proxy
         self.enable_widgets = range(2, 14)
         self.stop_widgets = range(26, 38)
+        # elapsed
         self.elapsed_widget = self.rdwdgts[0]
-        #
-        self.timer_device = self.timer_on_led.attribute.device_proxy
         # additional decorations
         self.single_periodical_callback(self.comboBox.currentIndex())
         # Connect signals with slots
@@ -159,7 +160,7 @@ class MainWindow(QMainWindow):
         # resize main window
         # self.show_more_button_clicked()
         self.resize_main_window()
-        # populate comboBOx_2
+        # populate comboBox_2 - scripts for timer
         scripts = read_folder('scripts')
         truncated = [s.replace('.py', '') for s in scripts]
         for i in range(self.comboBox_2.count()):
@@ -245,9 +246,10 @@ class MainWindow(QMainWindow):
         elif value == 1:  # periodical
             # check protection interlock
             if not self.check_protection_interlock():
-                self.logger.error('Shot is rejected')
+                self.logger.error('Shot has been rejected')
                 self.comboBox.setCurrentIndex(0)
                 self.comboBox.setStyleSheet('border: 3px solid red')
+                QMessageBox.critical(self, 'Forbidden', 'Shot has been rejected', QMessageBox.Ok)
                 return
             # show remained
             self.label_4.setVisible(True)
@@ -263,11 +265,13 @@ class MainWindow(QMainWindow):
         self.stackedWidget_2.setCurrentIndex(1)
 
     def update_ready_led(self):
-        if self.pushButton_34.isVisible():
-            if self.check_protection_interlock():
-                self.pushButton_34.setChecked(True)
-            else:
-                self.pushButton_34.setChecked(False)
+        # if self.pushButton_34.isVisible():
+        if self.check_protection_interlock():
+            self.pushButton_34.setChecked(True)
+        else:
+            self.pushButton_34.setChecked(False)
+            if self.timer_on_led.get_widget_value():
+                self.pulse_off('Protection interlock')
 
     def run_button_clicked(self, value):
         if self.comboBox.currentIndex() == 0:   # single
@@ -276,9 +280,9 @@ class MainWindow(QMainWindow):
             else:
                 # check protection interlock
                 if not self.check_protection_interlock():
-                    self.logger.error('Shot is rejected')
+                    self.logger.error('Shot has been rejected')
                     self.pushButton.setStyleSheet('border: 3px solid red')
-                    QMessageBox.critical(self, 'Forbidden', 'Shot is rejected', QMessageBox.Ok)
+                    QMessageBox.critical(self, 'Forbidden', 'Shot has been rejected', QMessageBox.Ok)
                     return
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 1)
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 0)
@@ -287,17 +291,30 @@ class MainWindow(QMainWindow):
                 self.pulse_off()
             self.comboBox.setCurrentIndex(0)
 
-    def pulse_off(self):
+    def pulse_off(self, msg='Interrupted by user.'):
         n = 0
+        self.last_state = [False] * 12
         for k in range(12):
             try:
+                self.last_state[k] = self.wtwdgts[self.enable_widgets[k]].get_widget_value()
                 self.timer_device.write_attribute('channel_enable' + str(k), False)
             except KeyboardInterrupt:
                raise
             except:
                 n += 1
         if n <= 0:
-            QMessageBox.critical(self, 'Emergency', 'Shot has been interrupted', QMessageBox.Ok)
+            a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.StandardButtons(QMessageBox.Yes|QMessageBox.No))
+            if a == QMessageBox.Yes:
+                n = 0
+                for k in range(12):
+                    try:
+                        # self.timer_device.write_attribute('channel_enable' + str(k), self.last_state[k])
+                        self.wtwdgts[self.enable_widgets[k]].write(self.last_state[k])
+                    except KeyboardInterrupt:
+                       raise
+                    except:
+                        n += 1
+            # QMessageBox.critical(self, 'Emergency', 'Shot has been interrupted', QMessageBox.Ok)
             return
         self.logger.warnibg("Can not stop pulse")
         self.logger.debug("Exception ", exc_info=True)

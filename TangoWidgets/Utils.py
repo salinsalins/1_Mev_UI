@@ -22,43 +22,45 @@ import tango.server
 
 # ^(  +)except:
 # $1except KeyboardInterrupt:\n$1   raise\n$1except:
-def config_logger(name=__name__, level=logging.DEBUG, tango_logging=False):
-
-    def tango_handler_emit(logger_handler, record):
-        try:
-            msg = logger_handler.format(record)
-            if logger_handler.level >= logging.CRITICAL:
-                tango.server.Device.fatal_stream(msg)
-            elif logger_handler.level >= logging.ERROR:
-                tango.server.Device.error_stream(msg)
-            elif logger_handler.level >= logging.WARNING:
-                tango.server.Device.warn_stream(msg)
-            elif logger_handler.level >= logging.INFO:
-                tango.server.Device.info_stream(msg)
-            elif logger_handler.level >= logging.DEBUG:
-                tango.server.Device.debug_stream(msg)
-        except Exception:
-            logger_handler.handleError(record)
-
-    logger = logging.getLogger(name)
-    #logger.setLevel(level)
-    if not logger.hasHandlers():
-        logger.propagate = False
-        f_str = '%(asctime)s,%(msecs)3d %(levelname)-7s %(filename)s %(funcName)s(%(lineno)s) %(message)s'
-        log_formatter = logging.Formatter(f_str, datefmt='%H:%M:%S')
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(log_formatter)
-        logger.addHandler(console_handler)
-        logger.setLevel(level)
-        # add tango logger
-        if tango_logging:
-            tango_handler = logging.Handler()
-            tango_handler.setFormatter(log_formatter)
-            tango_handler.emit = tango_handler_emit
-            logger.addHandler(tango_handler)
-    return logger
 
 
+# def config_logger(name=__name__, level=logging.DEBUG, tango_logging=False):
+#
+#     def tango_handler_emit(logger_handler, record):
+#         try:
+#             msg = logger_handler.format(record)
+#             if logger_handler.level >= logging.CRITICAL:
+#                 tango.server.Device.fatal_stream(msg)
+#             elif logger_handler.level >= logging.ERROR:
+#                 tango.server.Device.error_stream(msg)
+#             elif logger_handler.level >= logging.WARNING:
+#                 tango.server.Device.warn_stream(msg)
+#             elif logger_handler.level >= logging.INFO:
+#                 tango.server.Device.info_stream(msg)
+#             elif logger_handler.level >= logging.DEBUG:
+#                 tango.server.Device.debug_stream(msg)
+#         except Exception:
+#             logger_handler.handleError(record)
+#
+#     logger = logging.getLogger(name)
+#     #logger.setLevel(level)
+#     if not logger.hasHandlers():
+#         logger.propagate = False
+#         f_str = '%(asctime)s,%(msecs)3d %(levelname)-7s %(filename)s %(funcName)s(%(lineno)s) %(message)s'
+#         log_formatter = logging.Formatter(f_str, datefmt='%H:%M:%S')
+#         console_handler = logging.StreamHandler()
+#         console_handler.setFormatter(log_formatter)
+#         logger.addHandler(console_handler)
+#         logger.setLevel(level)
+#         # add tango logger
+#         if tango_logging:
+#             tango_handler = logging.Handler()
+#             tango_handler.setFormatter(log_formatter)
+#             tango_handler.emit = tango_handler_emit
+#             logger.addHandler(tango_handler)
+#     return logger
+#
+#
 def get_all_widgets(obj: QtWidgets.QWidget):
     wgts = []
     lout = obj.layout()

@@ -11,6 +11,7 @@ import time
 from PyQt5.QtWidgets import QWidget
 import tango
 
+from config_logger import config_logger
 from log_exception import log_exception
 from .Utils import *
 from .TangoAttribute import TangoAttribute, TangoAttributeConnectionFailed
@@ -144,7 +145,6 @@ class TangoWidget:
         return result
 
     def callback(self, value):
-        # self.logger.debug('Callback entry')
         if self.attribute.is_readonly():
             return
         try:
@@ -154,7 +154,7 @@ class TangoWidget:
         except KeyboardInterrupt:
            raise
         except:
-            # log_exception('Exception in callback')
-            self.logger.warning('Exception in callback')
-            self.logger.debug('Exception Info:', exc_info=True)
+            log_exception('Exception in callback')
+            # self.logger.warning('Exception in callback')
+            # self.logger.debug('Exception Info:', exc_info=True)
             self.decorate()

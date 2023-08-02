@@ -63,6 +63,10 @@ class TangoAttribute:
             self.device_proxy = self.create_device_proxy()
             if self.device_proxy is None:
                 return False
+            if not self.attribute_name:
+                self.connected = True
+                self.logger.info('Device only %s has been connected' % self.full_name)
+                return True
             self.set_config()
             self.read_result = self.device_proxy.read_attribute(self.attribute_name)
             self.connected = True
@@ -103,7 +107,7 @@ class TangoAttribute:
             try:
                 # check if device is alive
                 pt = TangoAttribute.devices[self.device_name].ping()
-                self.logger.debug('Device %s for %s exists, ping=%d' % (self.device_name, self.attribute_name, pt))
+                self.logger.debug('Device %s for %s exists', self.device_name, self.attribute_name)
             except KeyboardInterrupt:
                 raise
             except:
@@ -188,13 +192,16 @@ class TangoAttribute:
         except tango.AsynReplyNotArrived:
             if time.time() - self.read_time > self.read_timeout:
                 self.logger.warning('Timeout reading %s', self.full_name)
-                self.device_proxy.cancel_asynch_request(self.read_call_id)
+                if self.read_call_id is not None:
+                    self.device_proxy.cancel_asynch_request(self.read_call_id)
                 self.read_call_id = None
                 # self.disconnect()
                 raise
         except TangoAttributeConnectionFailed:
             # self.logger.info('Attribute %s read Connection Failed' % self.full_name)
             # self.device_proxy.cancel_asynch_request(self.read_call_id)
+            if self.read_call_id is not None:
+                self.device_proxy.cancel_asynch_request(self.read_call_id)
             self.read_call_id = None
             self.read_result = None
             self.disconnect()
@@ -203,7 +210,8 @@ class TangoAttribute:
             raise
         except:
             log_exception(self.logger, 'Attribute %s read Exception', self.full_name)
-            self.device_proxy.cancel_asynch_request(self.read_call_id)
+            if self.read_call_id is not None:
+                self.device_proxy.cancel_asynch_request(self.read_call_id)
             self.read_call_id = None
             self.read_result = None
             self.disconnect()
@@ -219,6 +227,8 @@ class TangoAttribute:
         else:
             self.read_result = self.device_proxy.read_attribute(self.attribute_name)
         # cancel waited async requests
+        if self.read_call_id is not None:
+            self.device_proxy.cancel_asynch_request(self.read_call_id)
         self.read_call_id = None
 
     def read_async(self):
@@ -247,7 +257,8 @@ class TangoAttribute:
             if time.time() - self.write_time > self.write_timeout:
                 msg = 'Timeout writing %s' % self.full_name
                 self.logger.warning(msg)
-                self.device_proxy.cancel_asynch_request(self.write_call_id)
+                if self.write_call_id is not None:
+                    self.device_proxy.cancel_asynch_request(self.write_call_id)
                 self.write_call_id = None
                 self.disconnect()
                 raise
@@ -261,7 +272,8 @@ class TangoAttribute:
             msg = 'Attribute %s write Exception %s' % (self.full_name, sys.exc_info()[0])
             self.logger.info(msg)
             self.logger.debug('Exception:', exc_info=True)
-            self.device_proxy.cancel_asynch_request(self.write_call_id)
+            if self.write_call_id is not None:
+                self.device_proxy.cancel_asynch_request(self.write_call_id)
             self.write_call_id = None
             self.disconnect()
             raise
@@ -294,6 +306,12 @@ class TangoAttribute:
             raise
         except:
             return None
+
+    def valid_value(self):
+        v = self.value()
+        if v is None or not self.is_valid():
+            return None
+        return v
 
     def write_value(self, value):
         if self.is_boolean():
