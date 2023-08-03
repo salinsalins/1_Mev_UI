@@ -297,6 +297,10 @@ class MainWindow(QMainWindow):
                     return
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 1)
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 0)
+            for w in self.enable_widgets:
+                if w.get_widget_value():
+                    return
+            QMessageBox.critical(self, 'No active channels', 'No active channels', QMessageBox.Ok)
         elif self.comboBox.currentIndex() == 1:  # periodical
             if self.timer_on_led.value:   # pulse is on
                 self.pulse_off('Interrupted by user.')

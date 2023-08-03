@@ -10,7 +10,7 @@ import time
 
 from PyQt5.QtWidgets import QWidget
 import tango
-from tango import DeviceProxy, GreenMode
+from tango import DeviceProxy, GreenMode, DeviceAttribute
 
 from TangoWidgets.Utils import split_attribute_name
 from config_logger import config_logger
@@ -68,7 +68,17 @@ class TangoAttribute:
                 self.logger.info('Device only %s has been connected' % self.full_name)
                 return True
             self.set_config()
+            # t0 = time.time()
+            # try:
+            #     self.read_async()
+            # while self.read_call_id is not None and time.time() - t0 < 0.1:
+            #     self.read_async()
+            # if self.read_call_id is not None:
+            #     self.read_result = DeviceAttribute()
+            #     self.read_result.value = None
             self.read_result = self.device_proxy.read_attribute(self.attribute_name)
+            # self.read_result = DeviceAttribute()
+            # self.read_result.value = None
             self.connected = True
             self.logger.info('Attribute %s has been connected' % self.full_name)
             return True
