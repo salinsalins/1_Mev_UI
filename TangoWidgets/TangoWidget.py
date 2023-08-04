@@ -139,8 +139,8 @@ class TangoWidget:
         result = None
         if hasattr(self.widget, 'value'):
             result = self.widget.value()
-        elif hasattr(self.widget, 'checkState'):
-            result = self.widget.checkState()
+        elif hasattr(self.widget, 'isChecked'):
+            result = self.widget.isChecked()
         elif hasattr(self.widget, 'text'):
             result = self.widget.text()
         return result

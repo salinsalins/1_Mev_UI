@@ -27,8 +27,7 @@ class Timer_on_LED(TangoLED):
         if not self.use_state:
             self.elapsed = TangoAttribute(elapsed)
 
-
-    def read(self, force=False):
+    def read(self, force=False, **kwargs):
         self.value = self.check_state()
         return self.value
 

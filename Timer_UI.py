@@ -103,13 +103,13 @@ class MainWindow(QMainWindow):
             TangoLabel('binp/nbi/timing/channel_enable10', self.label_43, prop='label'),  # ch
             TangoLabel('binp/nbi/timing/channel_enable11', self.label_44, prop='label'),  # ch11
             # pg
-            TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31),  # PG offset on
-            # lauda
-            # TangoLED('binp/nbi/laudapy/6230_7', self.pushButton_30),  # Pump On
-            # TangoLED('binp/nbi/laudapy/6230_0', self.pushButton_30),  # Valve
-            Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30),
+            # TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31),  # PG offset on
+            # # lauda
+            # # TangoLED('binp/nbi/laudapy/6230_7', self.pushButton_30),  # Pump On
+            # # TangoLED('binp/nbi/laudapy/6230_0', self.pushButton_30),  # Valve
+            # Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30),
             # rf system
-            RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32),  # RF system ready
+            # RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32),  # RF system ready
         ]
         # read/write attributes TangoWidgets list
         self.wtwdgts = [
@@ -134,7 +134,13 @@ class MainWindow(QMainWindow):
         # more individual widgets
         self.timer_on_led = Timer_on_LED('binp/nbi/timing/pulse_start0', self.pushButton_29)  # timer on led
         self.timer_device = self.timer_on_led.attribute.device_proxy
-        self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
+        # interlock widgets
+        self.anode_power_led = TangoLED('sys/test/1/boolean_scalar', self.pushButton_33)
+        # self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
+        self.lauda = Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30),
+        self.rf = RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32),  # RF system ready
+        self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31),  # PG offset on
+        # elapsed widget
         self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
         # combine all processed widgets
         self.widgets = self.rdwdgts + self.wtwdgts + self.enable_widgets + self.stop_widgets + [self.timer_on_led, self.anode_power_led, self.elapsed_widget]
@@ -196,11 +202,27 @@ class MainWindow(QMainWindow):
         pass
 
     def check_protection_interlock(self):
-        value = ((not self.checkBox_20.isChecked()) or self.pushButton_30.isChecked()) and \
-                ((not self.checkBox_21.isChecked()) or self.pushButton_31.isChecked()) and \
-                ((not self.checkBox_23.isChecked()) or self.pushButton_33.isChecked()) and \
-                ((not self.checkBox_22.isChecked()) or self.pushButton_32.isChecked())
-        return value
+        if self.checkBox_23.isChecked():
+            self.pushButton_33.tango_widget.update()
+            if not self.pushButton_33.isChecked():
+                return False
+        if self.checkBox_20.isChecked():
+            self.pushButton_30.tango_widget.update()
+            if not self.pushButton_30.isChecked():
+                return False
+        if self.checkBox_21.isChecked():
+            self.pushButton_31.tango_widget.update()
+            if not self.pushButton_31.isChecked():
+                return False
+        if self.checkBox_22.isChecked():
+            self.pushButton_32.tango_widget.update()
+            if not self.pushButton_32.isChecked():
+                return False
+        # value = ((not self.checkBox_20.isChecked()) or self.pushButton_30.isChecked()) and \
+        #         ((not self.checkBox_21.isChecked()) or self.pushButton_31.isChecked()) and \
+        #         ((not self.checkBox_23.isChecked()) or self.pushButton_33.isChecked()) and \
+        #         ((not self.checkBox_22.isChecked()) or self.pushButton_32.isChecked())
+        return True
 
     # def show_hide_interlocks(self):
     #     if self.pushButton_4.isChecked():
@@ -294,8 +316,8 @@ class MainWindow(QMainWindow):
             self.pushButton_34.setChecked(True)
         else:
             self.pushButton_34.setChecked(False)
-            if self.timer_on_led.get_widget_value():
-                self.pulse_off('Protection interlock')
+            if self.timer_on_led.value:
+                self.pulse_off('Protection interlock!')
 
     def run_button_clicked(self, value):
         if self.comboBox.currentIndex() == 0:   # single
@@ -316,7 +338,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, 'No active channels', 'No active channels', QMessageBox.Ok)
         elif self.comboBox.currentIndex() == 1:  # periodical
             if self.timer_on_led.value:   # pulse is on
-                self.pulse_off('Interrupted by user.')
+                self.pulse_off('Interrupted by user!')
             self.comboBox.setCurrentIndex(0)
 
     def pulse_off(self, msg='Interrupted by user.'):
@@ -331,7 +353,8 @@ class MainWindow(QMainWindow):
             except:
                 n += 1
         if n <= 0:
-            a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.StandardButtons(QMessageBox.Yes|QMessageBox.No))
+            a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.Yes|QMessageBox.No)
+            # a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.StandardButtons(QMessageBox.Yes|QMessageBox.No))
             if a == QMessageBox.Yes:
                 n = 0
                 for i, w in enumerate(self.enable_widgets):
@@ -363,6 +386,7 @@ class MainWindow(QMainWindow):
                     max_time = max(max_time, self.stop_widgets[i].get_widget_value())
             # during pulse
             # if self.timer_on_led.value:   # pulse is on
+            self.elapsed_widget.update()
             v = self.elapsed_widget.attribute.valid_value()
             if isinstance(v, float) and v < max_time/1000.0:
                 # pulse ON LED -> ON
@@ -383,9 +407,8 @@ class MainWindow(QMainWindow):
             except KeyboardInterrupt:
                raise
             except:
-                self.remained = -1.0
+                self.remained = -1
             self.label_5.setText('%d s' % self.remained)
-            self.update_ready_led()
             # main loop updating widgets
             count = 0
             while time.time() - t0 < TIMER_PERIOD/1000.00 * 0.8:
@@ -397,6 +420,7 @@ class MainWindow(QMainWindow):
                 count += 1
                 if count == len(self.widgets):
                     break
+            self.update_ready_led()
             self.elapsed = time.time() - t0
         except KeyboardInterrupt:
            raise
