@@ -76,9 +76,10 @@ class TangoAttribute:
             # if self.read_call_id is not None:
             #     self.read_result = DeviceAttribute()
             #     self.read_result.value = None
-            self.read_result = self.device_proxy.read_attribute(self.attribute_name)
+            # self.read_result = self.device_proxy.read_attribute(self.attribute_name)
             # self.read_result = DeviceAttribute()
             # self.read_result.value = None
+            # self.read_async()
             self.connected = True
             self.logger.info('Attribute %s has been connected' % self.full_name)
             return True
@@ -117,7 +118,7 @@ class TangoAttribute:
             try:
                 # check if device is alive
                 pt = TangoAttribute.devices[self.device_name].ping()
-                self.logger.debug('Device %s for %s exists', self.device_name, self.attribute_name)
+                # self.logger.debug('Device %s for %s exists', self.device_name, self.attribute_name)
             except KeyboardInterrupt:
                 raise
             except:
@@ -304,18 +305,21 @@ class TangoAttribute:
         # self.logger.debug(msg)
 
     def value(self):
+        v = None
         try:
-            return self.read_result.value * self.coeff
+            v = self.read_result.value
+            v *= self.coeff
         except KeyboardInterrupt:
             raise
         except:
             pass
-        try:
-            return self.read_result.value
-        except KeyboardInterrupt:
-            raise
-        except:
-            return None
+        return v
+        # try:
+        #     return self.read_result.value
+        # except KeyboardInterrupt:
+        #     raise
+        # except:
+        #     return None
 
     def valid_value(self):
         v = self.value()

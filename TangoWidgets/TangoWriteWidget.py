@@ -11,6 +11,8 @@ from TangoWidgets.TangoWidget import TangoWidget
 class TangoWriteWidget(TangoWidget):
     def __init__(self, name, widget: QWidget, readonly=False):
         super().__init__(name, widget, readonly)
+        self.attribute.read_result = self.attribute.device_proxy.read_attribute(self.attribute.attribute_name)
+        self.update(decorate_only=False)
 
     def decorate_error(self):
         self.widget.setStyleSheet('color: gray')
@@ -34,16 +36,32 @@ class TangoWriteWidget(TangoWidget):
             return True
         else:
             try:
-                if self.attribute.is_boolean():
+                v = self.attribute.valid_value()
+                if v is None:
+                    return False
+                if isinstance(v, bool):
                     return self.attribute.value() == self.widget.value()
-                if abs(int(self.attribute.value()) - int(self.widget.value())) > 1:
-                    self.logger.debug('%s %s != %s' % (self.attribute.full_name, int(self.attribute.value()), int(self.widget.value())))
-                    return False
-                if abs((self.attribute.value() - self.widget.value())) > abs((1e-3 * self.widget.value())):
-                    self.logger.debug('%s %s != %s' % (self.attribute.full_name, self.attribute.value(), self.widget.value()))
-                    return False
+                elif isinstance(v, int):
+                    v1 = int(self.widget.value())
+                    if abs(v - v1) > 1:
+                        self.logger.debug('%s %s != %s', self.attribute.full_name, v, v1)
+                        return False
+                elif isinstance(v, float):
+                    v1 = float(self.widget.value())
+                    if abs(v - v1) > abs(v * 1e-3):
+                        self.logger.debug('%s %s != %s', self.attribute.full_name, v, v1)
+                        return False
+                elif isinstance(v, str):
+                    v1 = str(self.widget.value())
+                    if v != v1:
+                        self.logger.debug('%s %s != %s', self.attribute.full_name, v, v1)
+                        return False
                 else:
-                    return True
+                    self.logger.debug('Unknown %s value %s', self.attribute.full_name, v)
+                    return False
+                return True
+            except KeyboardInterrupt:
+               raise
             except:
                 self.logger.debug('%s Exception in compare' % self.attribute.full_name, exc_info=True)
                 return False

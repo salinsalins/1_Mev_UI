@@ -350,7 +350,8 @@ class MainWindow(QMainWindow):
                     max_time = max(max_time, self.stop_widgets[i].get_widget_value())
             # during pulse
             # if self.timer_on_led.value:   # pulse is on
-            if self.elapsed_widget.attribute.value() < max_time/1000.0:
+            v = self.elapsed_widget.attribute.valid_value()
+            if isinstance(v, float) and v < max_time/1000.0:
                 # pulse ON LED -> ON
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')

@@ -43,6 +43,7 @@ class TangoWidget:
         if hasattr(self.widget, 'setText') and text is not None:
             self.widget.setText(text)
         self.widget.setStyleSheet('color: red')
+        self.logger.debug('%s decorated invalid' % self.name)
 
     def decorate_invalid_data_format(self, text: str = None, *args, **kwargs):
         self.decorate_invalid(text, *args, **kwargs)
@@ -90,14 +91,14 @@ class TangoWidget:
                 self.set_widget_value()
             self.decorate()
         except TangoAttributeConnectionFailed:
-            # self.logger.info('Exception: %s' % sys.exc_info()[1])
-            self.set_attribute_value()
+            log_exception(self.logger)
+            # self.set_attribute_value()
             self.decorate()
         except KeyboardInterrupt:
            raise
         except:
             log_exception(self.logger)
-            self.set_attribute_value()
+            # self.set_attribute_value()
             self.decorate()
 
     def decorate(self):
@@ -108,11 +109,11 @@ class TangoWidget:
             self.logger.debug('%s is non scalar' % self.name)
             self.decorate_invalid_data_format()
         elif not self.attribute.is_valid():
-            self.logger.debug('%s is invalid' % self.name)
+            # self.logger.debug('%s is invalid' % self.name)
             self.decorate_invalid_quality()
         else:
             if not self.compare():
-                self.logger.debug('%s not equal' % self.name)
+                # self.logger.debug('%s not equal' % self.name)
                 self.decorate_not_equal()
             else:
                 self.decorate_valid()

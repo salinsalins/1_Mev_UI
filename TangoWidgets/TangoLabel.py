@@ -26,9 +26,9 @@ class TangoLabel(TangoWidget):
             self.database = tango.Database()
         self.property_value = self.database.get_device_attribute_property(self.attribute.device_name, self.attribute.attribute_name)[self.attribute.attribute_name][self.property][0]
 
-    def read(self, force=False):
+    def read(self, force=None, sync=None):
         if self.property is None:
-            super().read()
+            super().read(force, sync)
             return
         if self.refresh or self.property_value is None:
             self.read_property()
@@ -39,4 +39,11 @@ class TangoLabel(TangoWidget):
             super().set_widget_value()
         else:
             self.widget.setText(str(self.property_value))
+
+    def decorate(self):
+        if self.property is None:
+            super().decorate()
+        else:
+            self.decorate_valid()
+
 
