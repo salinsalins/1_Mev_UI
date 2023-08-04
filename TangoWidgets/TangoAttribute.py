@@ -203,16 +203,14 @@ class TangoAttribute:
         except tango.AsynReplyNotArrived:
             if time.time() - self.read_time > self.read_timeout:
                 self.logger.warning('Timeout reading %s', self.full_name)
-                if self.read_call_id is not None:
-                    self.device_proxy.cancel_asynch_request(self.read_call_id)
+                self.cancel_asynch_request(self.read_call_id)
                 self.read_call_id = None
                 # self.disconnect()
                 raise
         except TangoAttributeConnectionFailed:
             # self.logger.info('Attribute %s read Connection Failed' % self.full_name)
             # self.device_proxy.cancel_asynch_request(self.read_call_id)
-            if self.read_call_id is not None:
-                self.device_proxy.cancel_asynch_request(self.read_call_id)
+            self.cancel_asynch_request(self.read_call_id)
             self.read_call_id = None
             self.read_result = None
             self.disconnect()
@@ -220,15 +218,21 @@ class TangoAttribute:
         except KeyboardInterrupt:
             raise
         except:
-            log_exception(self.logger, 'Attribute %s read Exception', self.full_name)
-            if self.read_call_id is not None:
-                self.device_proxy.cancel_asynch_request(self.read_call_id)
+            log_exception(self.logger, 'Attribute %s read Exception:', self.full_name)
+            self.cancel_asynch_request(self.read_call_id)
             self.read_call_id = None
             self.read_result = None
             self.disconnect()
             raise
         return self.value()
 
+    def cancel_asynch_request(self, read_call_id):
+        try:
+            self.device_proxy.cancel_asynch_request(read_call_id)
+        except KeyboardInterrupt:
+            raise
+        except:
+            pass
     def read_sync(self, force=False):
         if self.use_history and not force and self.attribute_polled:
             at = self.device_proxy.attribute_history(self.attribute_name, 1)[0]

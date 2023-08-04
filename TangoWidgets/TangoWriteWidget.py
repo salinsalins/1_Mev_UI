@@ -12,6 +12,7 @@ class TangoWriteWidget(TangoWidget):
     def __init__(self, name, widget: QWidget, readonly=False):
         super().__init__(name, widget, readonly)
         self.attribute.read_result = self.attribute.device_proxy.read_attribute(self.attribute.attribute_name)
+        # update which set widget value from attribute
         self.update(decorate_only=False)
 
     def decorate_error(self):

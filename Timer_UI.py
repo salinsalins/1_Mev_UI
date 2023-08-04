@@ -258,10 +258,23 @@ class MainWindow(QMainWindow):
         elif value == 1:  # switch to periodical
             # check protection interlock
             if not self.check_protection_interlock():
-                self.logger.error('Shot has been rejected')
+                self.logger.error('Protection - Shot has been rejected')
                 self.comboBox.setCurrentIndex(0)
                 self.comboBox.setStyleSheet('border: 3px solid red')
-                QMessageBox.critical(self, 'Forbidden', 'Shot has been rejected', QMessageBox.Ok)
+                QMessageBox.critical(self, 'Protection', 'Protection interlock.\nShot has been rejected.', QMessageBox.Ok)
+                return
+            # check for period expired
+            try:
+                remained = self.spinBox.value() - int(self.label_3.text())
+            except KeyboardInterrupt:
+               raise
+            except:
+                remained = -1
+            if remained >= 0:
+                self.logger.error('Period - Shot has been rejected')
+                self.comboBox.setCurrentIndex(0)
+                self.comboBox.setStyleSheet('border: 3px solid red')
+                QMessageBox.critical(self, 'Period', 'Period is not expired.\nShot has been rejected.', QMessageBox.Ok)
                 return
             # show remained
             self.label_4.setVisible(True)

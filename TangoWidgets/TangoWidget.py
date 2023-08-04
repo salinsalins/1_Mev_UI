@@ -31,7 +31,7 @@ class TangoWidget:
         self.update_dt = 0.0
         # create attribute proxy
         self.attribute = TangoAttribute(name, level=level, readonly=readonly)
-        # first update with set widget value from attribute
+        # first update
         self.update(decorate_only=False)
 
     def decorate_error(self, *args, **kwargs):
