@@ -382,7 +382,9 @@ class MainWindow(QMainWindow):
                 return
             max_time = 0.0
             for i, w in enumerate(self.enable_widgets):
-                if w.get_widget_value():
+                w.attribute.read()
+                if w.attribute.value():
+                    # max_time = max(max_time, self.stop_widgets[i].get_widget_value())
                     max_time = max(max_time, self.stop_widgets[i].get_widget_value())
             # during pulse
             # if self.timer_on_led.value:   # pulse is on
