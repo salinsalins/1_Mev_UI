@@ -233,6 +233,7 @@ class TangoAttribute:
             raise
         except:
             pass
+
     def read_sync(self, force=False):
         if self.use_history and not force and self.attribute_polled:
             at = self.device_proxy.attribute_history(self.attribute_name, 1)[0]

@@ -74,6 +74,7 @@ class MainWindow(QMainWindow):
             TangoCheckBox('binp/nbi/timing/channel_enable10', self.checkBox_18),  # ch10
             TangoCheckBox('binp/nbi/timing/channel_enable11', self.checkBox_19),  # ch11        13
         ]
+        self.restore = False
         self.stop_widgets = [
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop0', self.spinBox_11),  # ch0        26
             TangoAbstractSpinBox('binp/nbi/timing/pulse_stop1', self.spinBox_13),  # ch
@@ -143,7 +144,8 @@ class MainWindow(QMainWindow):
         # elapsed widget
         self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
         # combine all processed widgets
-        self.widgets = self.rdwdgts + self.wtwdgts + self.enable_widgets + self.stop_widgets + [self.timer_on_led, self.anode_power_led, self.elapsed_widget]
+        self.widgets = (self.rdwdgts + self.wtwdgts + self.enable_widgets + self.stop_widgets +
+                        [self.lauda, self.rf, self.pg, self.anode_power_led, self.elapsed_widget])
         # *******************************
         # additional decorations
         self.single_periodical_callback(self.comboBox.currentIndex())
@@ -343,32 +345,23 @@ class MainWindow(QMainWindow):
 
     def pulse_off(self, msg='Interrupted by user.'):
         n = 0
-        self.last_state = [False] * len(self.enable_widgets)
-        for i, w in enumerate(self.enable_widgets):
+        for w in self.enable_widgets:
             try:
-                self.last_state[i] = w.get_widget_value()
-                self.timer_device.write_attribute('channel_enable' + str(i), False)
+                w.last_state = w.get_widget_value()
+                self.timer_device.write_attribute(w.attribute.attribute_name, False)
             except KeyboardInterrupt:
                raise
             except:
                 n += 1
         if n <= 0:
-            a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.Yes|QMessageBox.No)
-            # a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.StandardButtons(QMessageBox.Yes|QMessageBox.No))
-            if a == QMessageBox.Yes:
-                n = 0
-                for i, w in enumerate(self.enable_widgets):
-                    try:
-                        # self.timer_device.write_attribute('channel_enable' + str(k), self.last_state[k])
-                        w.write(self.last_state[i])
-                    except KeyboardInterrupt:
-                       raise
-                    except:
-                        n += 1
             # QMessageBox.critical(self, 'Emergency', 'Shot has been interrupted', QMessageBox.Ok)
+            a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.Yes|QMessageBox.No)
+            if a == QMessageBox.Yes:
+                self.restore = True
             return
         self.logger.warnibg("Can not stop pulse")
         self.logger.debug("Exception ", exc_info=True)
+        self.restore = False
 
     def onQuit(self) :
         # Save global settings
@@ -389,18 +382,25 @@ class MainWindow(QMainWindow):
             self.elapsed_widget.update()
             v = self.elapsed_widget.attribute.valid_value()
             if isinstance(v, float) and v < max_time/1000.0:
-                # pulse ON LED -> ON
+                # pulse is ON LED -> ON
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')
-                self.timer_on_led.value = 1.0
-                self.timer_on_led.set_widget_value()
-            else:   # pulse is off
-                # pulse ON LED -> OFF
+                self.timer_on_led.set_widget_value(1.0)
+            else:
+                # pulse is OFF LED -> OFF
                 self.pushButton.setStyleSheet('')
-                self.timer_on_led.value = 0.0
-                self.timer_on_led.set_widget_value()
+                self.timer_on_led.set_widget_value(0.0)
                 if self.comboBox.currentIndex() == 0:
                     self.pushButton.setText('Shoot')
+                if self.restore:
+                    for w in self.enable_widgets:
+                        try:
+                            self.timer_device.write_attribute(w.attribute.attribute_name, w.last_state)
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            pass
+                    self.restore = False
             # remained
             try:
                 self.remained = self.spinBox.value() - int(self.label_3.text())
