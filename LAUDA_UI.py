@@ -5,10 +5,13 @@ Created on Jul 28, 2019
 @author: sanin
 """
 
+import sys
+
+if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
-import PyQt5.QtGui as QtGui
 
 from TangoWidgets.TangoWidget import TangoWidget
 from TangoWidgets.TangoLED import TangoLED
@@ -18,15 +21,17 @@ from TangoWidgets.TangoPushButton import TangoPushButton
 from TangoWidgets.TangoAttribute import TangoAttribute
 from TangoWidgets.Utils import *
 
+from config_logger import config_logger
+
 ORGANIZATION_NAME = 'BINP'
-APPLICATION_NAME = 'LAUDA_UI'
+APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
 APPLICATION_NAME_SHORT = APPLICATION_NAME
-APPLICATION_VERSION = '1_0'
+APPLICATION_VERSION = '2.0'
 CONFIG_FILE = APPLICATION_NAME_SHORT + '.json'
 UI_FILE = APPLICATION_NAME_SHORT + '.ui'
 
-# Global parameters
-TIMER_PERIOD = 1500  # ms
+# Globals
+TIMER_PERIOD = 500  # ms
 
 
 class MainWindow(QMainWindow):
