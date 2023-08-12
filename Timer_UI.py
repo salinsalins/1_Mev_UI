@@ -7,6 +7,7 @@ Created on Jul 28, 2019
 
 import os.path
 import sys
+
 if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
 
 from PyQt5.QtWidgets import QApplication
@@ -30,7 +31,7 @@ from TangoWidgets.Utils import *
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
 APPLICATION_NAME_SHORT = APPLICATION_NAME
-APPLICATION_VERSION = '2.2'
+APPLICATION_VERSION = '3.0'
 CONFIG_FILE = APPLICATION_NAME_SHORT + '.json'
 UI_FILE = APPLICATION_NAME_SHORT + '.ui'
 
@@ -51,9 +52,9 @@ class MainWindow(QMainWindow):
         # Load the Qt UI
         uic.loadUi(UI_FILE, self)
         # Default main window parameters
-        self.resize(QSize(480, 640))                 # size
-        self.move(QPoint(50, 50))                    # position
-        self.setWindowTitle(APPLICATION_NAME)        # title
+        self.resize(QSize(480, 640))  # size
+        self.move(QPoint(50, 50))  # position
+        self.setWindowTitle(APPLICATION_NAME)  # title
         # self.setWindowIcon(QtGui.QIcon('icon.png'))  # icon
         # Welcome message
         print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
@@ -130,22 +131,25 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start10', self.spinBox_30),  # ch
             TangoAbstractSpinBox('binp/nbi/timing/pulse_start11', self.spinBox_32),  # ch11     25
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_start', self.spinBox_34),  # adc start
-            TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),   # adc stop
+            TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),  # adc stop
         ]
         # more individual widgets
         self.timer_on_led = Timer_on_LED('binp/nbi/timing/pulse_start0', self.pushButton_29)  # timer on led
         self.timer_device = self.timer_on_led.attribute.device_proxy
         # interlock widgets
-        self.anode_power_led = TangoLED('sys/test/1/boolean_scalar', self.pushButton_33)
-        # self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
-        self.lauda = Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30),
-        self.rf = RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32),  # RF system ready
-        self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31),  # PG offset on
+        # self.anode_power_led = TangoLED('sys/test/1/boolean_scalar', self.pushButton_33)
+        self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
+        self.lauda = Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30)
+        self.rf = RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32)  # RF system ready
+        self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31)  # PG offset on
         # elapsed widget
         self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
         # combine all processed widgets
-        self.widgets = (self.rdwdgts + self.wtwdgts + self.enable_widgets + self.stop_widgets +
-                        [self.lauda, self.rf, self.pg, self.anode_power_led, self.elapsed_widget])
+        self.widgets = self.rdwdgts + self.wtwdgts + self.enable_widgets + self.stop_widgets + [self.lauda, self.rf,
+                                                                                                self.pg,
+                                                                                                self.anode_power_led,
+                                                                                                self.elapsed_widget]
+        self.max_time = 0.0
         # *******************************
         # additional decorations
         self.single_periodical_callback(self.comboBox.currentIndex())
@@ -220,55 +224,28 @@ class MainWindow(QMainWindow):
             self.pushButton_32.tango_widget.update()
             if not self.pushButton_32.isChecked():
                 return False
-        # value = ((not self.checkBox_20.isChecked()) or self.pushButton_30.isChecked()) and \
-        #         ((not self.checkBox_21.isChecked()) or self.pushButton_31.isChecked()) and \
-        #         ((not self.checkBox_23.isChecked()) or self.pushButton_33.isChecked()) and \
-        #         ((not self.checkBox_22.isChecked()) or self.pushButton_32.isChecked())
         return True
-
-    # def show_hide_interlocks(self):
-    #     if self.pushButton_4.isChecked():
-    #         self.checkBox_20.show()
-    #         self.checkBox_21.show()
-    #         self.checkBox_22.show()
-    #         self.checkBox_23.show()
-    #     else:
-    #         self.checkBox_20.hide()
-    #         self.checkBox_21.hide()
-    #         self.checkBox_22.hide()
-    #         self.checkBox_23.hide()
 
     def execute_button_clicked(self):
         try:
-            file_name = os.path.join('scripts', self.comboBox_2.currentText()+'.py')
+            file_name = os.path.join('scripts', self.comboBox_2.currentText() + '.py')
             with open(file_name, 'r') as scriptfile:
                 s = scriptfile.read()
                 result = exec(s)
                 self.logger.debug('Script %s executed', file_name)
                 self.comboBox_2.setStyleSheet('')
         except KeyboardInterrupt:
-           raise
+            raise
         except:
             self.comboBox_2.setStyleSheet('color: red')
             self.logger.warning('Error action execution')
             self.logger.debug('', exc_info=True)
 
-    # def show_more_button_clicked(self):
-    #     if self.pushButton_3.isChecked():
-    #         self.frame.setVisible(True)
-    #         # self.resize(QSize(418, 751))
-    #         self.resize(QSize(self.gridLayout_2.sizeHint().width(),
-    #                           self.gridLayout_2.sizeHint().height()+self.gridLayout_3.sizeHint().height()))
-    #     else:
-    #         self.frame.setVisible(False)
-    #         # self.resize(QSize(418, 124))
-    #         self.resize(self.gridLayout_2.sizeHint())
-
     def resize_main_window(self):
         self.frame.setVisible(True)
         # self.resize(QSize(418, 751))
         self.resize(QSize(self.gridLayout_2.sizeHint().width(),
-                          self.gridLayout_2.sizeHint().height()+self.gridLayout_3.sizeHint().height()))
+                          self.gridLayout_2.sizeHint().height() + self.gridLayout_3.sizeHint().height()))
 
     def single_periodical_callback(self, value):
         if value == 0:  # switch to single
@@ -285,13 +262,14 @@ class MainWindow(QMainWindow):
                 self.logger.error('Protection - Shot has been rejected')
                 self.comboBox.setCurrentIndex(0)
                 self.comboBox.setStyleSheet('border: 3px solid red')
-                QMessageBox.critical(self, 'Protection', 'Protection interlock.\nShot has been rejected.', QMessageBox.Ok)
+                QMessageBox.critical(self, 'Protection', 'Protection interlock.\nShot has been rejected.',
+                                     QMessageBox.Ok)
                 return
             # check for period expired
             try:
                 remained = self.spinBox.value() - int(self.label_3.text())
             except KeyboardInterrupt:
-               raise
+                raise
             except:
                 remained = -1
             if remained >= 0:
@@ -303,8 +281,17 @@ class MainWindow(QMainWindow):
             # show remained
             self.label_4.setVisible(True)
             self.label_5.setVisible(True)
+            self.max_time = self.read_max_time() / 1000.0
             self.comboBox.tango_widget.callback(value)
             self.comboBox.tango_widget.read(force=True, sync=True)
+
+    def read_max_time(self):
+        mt = 0.0
+        for i, w in enumerate(self.enable_widgets):
+            w.attribute.read()
+            if w.attribute.value():
+                mt = max(mt, self.stop_widgets[i].get_widget_value())
+        return mt
 
     def show_more_protection_button_clicked(self, value):
         self.stackedWidget_2.setCurrentIndex(0)
@@ -318,20 +305,21 @@ class MainWindow(QMainWindow):
             self.pushButton_34.setChecked(True)
         else:
             self.pushButton_34.setChecked(False)
-            if self.timer_on_led.value:
-                self.pulse_off('Protection interlock!')
+            if self.timer_on_led.widget.isEnabled():
+                self.pulse_off('Protection interlock')
 
     def run_button_clicked(self, value):
-        if self.comboBox.currentIndex() == 0:   # single
-            if self.timer_on_led.value:   # pulse is on
+        if self.comboBox.currentIndex() == 0:  # single
+            if self.timer_on_led.value:  # pulse is on
                 self.pulse_off('Interrupted by user.')
             else:
                 # check protection interlock
                 if not self.check_protection_interlock():
                     self.logger.error('Shot has been rejected')
                     self.pushButton.setStyleSheet('border: 3px solid red')
-                    QMessageBox.critical(self, 'Forbidden', 'Shot has been rejected', QMessageBox.Ok)
+                    QMessageBox.critical(self, 'Interlock', 'Shot has been rejected', QMessageBox.Ok)
                     return
+                self.max_time = self.read_max_time() / 1000.0
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 1)
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 0)
             for w in self.enable_widgets:
@@ -339,7 +327,7 @@ class MainWindow(QMainWindow):
                     return
             QMessageBox.critical(self, 'No active channels', 'No active channels', QMessageBox.Ok)
         elif self.comboBox.currentIndex() == 1:  # periodical
-            if self.timer_on_led.value:   # pulse is on
+            if self.timer_on_led.value:  # pulse is on
                 self.pulse_off('Interrupted by user!')
             self.comboBox.setCurrentIndex(0)
 
@@ -350,40 +338,38 @@ class MainWindow(QMainWindow):
                 w.last_state = w.get_widget_value()
                 self.timer_device.write_attribute(w.attribute.attribute_name, False)
             except KeyboardInterrupt:
-               raise
+                raise
             except:
                 n += 1
         if n <= 0:
             # QMessageBox.critical(self, 'Emergency', 'Shot has been interrupted', QMessageBox.Ok)
-            a = QMessageBox.question(self, 'Interrupted', msg+'\n\nRestore enabled channels?', QMessageBox.Yes|QMessageBox.No)
+            a = QMessageBox.question(self, 'Shot Interrupted', msg + '\n\nRestore enabled channels?',
+                                     QMessageBox.Yes | QMessageBox.No)
             if a == QMessageBox.Yes:
                 self.restore = True
+            self.max_time = 0.0
+            self.timer_on_led.set_widget_value(0.0)
             return
         self.logger.warnibg("Can not stop pulse")
         self.logger.debug("Exception ", exc_info=True)
         self.restore = False
 
-    def onQuit(self) :
+    def onQuit(self):
         # Save global settings
         save_settings(self, file_name=CONFIG_FILE)
         self.timer.stop()
-        
+
     def timer_handler(self):
         try:
             t0 = time.time()
             if len(self.widgets) <= 0:
                 return
-            max_time = 0.0
-            for i, w in enumerate(self.enable_widgets):
-                w.attribute.read()
-                if w.attribute.value():
-                    # max_time = max(max_time, self.stop_widgets[i].get_widget_value())
-                    max_time = max(max_time, self.stop_widgets[i].get_widget_value())
             # during pulse
             # if self.timer_on_led.value:   # pulse is on
+            self.update_ready_led()
             self.elapsed_widget.update()
             v = self.elapsed_widget.attribute.valid_value()
-            if isinstance(v, float) and v < max_time/1000.0:
+            if isinstance(v, float) and v < self.max_time:
                 # pulse is ON LED -> ON
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')
@@ -407,13 +393,13 @@ class MainWindow(QMainWindow):
             try:
                 self.remained = self.spinBox.value() - int(self.label_3.text())
             except KeyboardInterrupt:
-               raise
+                raise
             except:
                 self.remained = -1
             self.label_5.setText('%d s' % self.remained)
             # main loop updating widgets
             count = 0
-            while time.time() - t0 < TIMER_PERIOD/1000.00 * 0.8:
+            while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.8:
                 if self.n < len(self.widgets) and self.widgets[self.n].widget.isVisible():
                     self.widgets[self.n].update()
                 self.n += 1
@@ -425,7 +411,7 @@ class MainWindow(QMainWindow):
             self.update_ready_led()
             self.elapsed = time.time() - t0
         except KeyboardInterrupt:
-           raise
+            raise
         except:
             log_exception('Unexpected exception in timer callback')
 
