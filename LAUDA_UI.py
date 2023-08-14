@@ -26,7 +26,7 @@ from config_logger import config_logger
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
 APPLICATION_NAME_SHORT = APPLICATION_NAME
-APPLICATION_VERSION = '2.0'
+APPLICATION_VERSION = '3.0'
 CONFIG_FILE = APPLICATION_NAME_SHORT + '.json'
 UI_FILE = APPLICATION_NAME_SHORT + '.ui'
 
@@ -58,18 +58,18 @@ class MainWindow(QMainWindow):
         # read attributes TangoWidgets list
         self.rdwdgts = (
             # lauda
-            TangoLED('binp/nbi/lauda/6230_7', self.pushButton_34),  # Pump On
-            TangoLED('binp/nbi/lauda/6230_0', self.pushButton_31),  # Valve
-            TangoLabel('binp/nbi/lauda/1012', self.label_23),       # Return
+            TangoLED(self.config.get('pump', 'binp/nbi/lauda/6230_7'), self.pushButton_34),  # Pump On
+            TangoLED(self.config.get('valve', 'binp/nbi/lauda/6230_0'), self.pushButton_31),  # Valve
+            TangoLabel(self.config.get('return', 'binp/nbi/lauda/1012'), self.label_23),       # Return
         )
         # writable attributes TangoWidgets list
         self.wtwdgts = (
             # lauda
-            TangoAbstractSpinBox('binp/nbi/lauda/6200', self.spinBox_4, False),  # SetPoint
-            TangoPushButton('binp/nbi/lauda/6210_3', self.pushButton_4, False),  # Valve
-            TangoPushButton('binp/nbi/lauda/6210_1', self.pushButton_3, False),  # Run
-            TangoPushButton('binp/nbi/lauda/6210_0', self.pushButton_6, False),  # Enable
-            TangoPushButton('binp/nbi/lauda/6210_2', self.pushButton_9, False),  # Reset
+            TangoAbstractSpinBox(self.config.get('setpoint', 'binp/nbi/lauda/6200'), self.spinBox_4, False),  # SetPoint
+            TangoPushButton(self.config.get('valve', 'binp/nbi/lauda/6210_3'), self.pushButton_4, False),  # Valve
+            TangoPushButton(self.config.get('run', 'binp/nbi/lauda/6210_1'), self.pushButton_3, False),  # Run
+            TangoPushButton(self.config.get('enable', 'binp/nbi/lauda/6210_0'), self.pushButton_6, False),  # Enable
+            TangoPushButton(self.config.get('reset', 'binp/nbi/lauda/6210_2'), self.pushButton_9, False),  # Reset
         )
         #
         TangoWidget.RECONNECT_TIMEOUT = 5.0
@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         self.spinBox_4.valueChanged.connect(self.setpoint_valueChanged)
         # lauda device
         try:
-            self.lauda = TangoAttribute.devices['binp/nbi/lauda']
+            self.lauda = TangoAttribute.devices.values[0]
         except:
             self.lauda = None
         # Defile and start timer callback task
