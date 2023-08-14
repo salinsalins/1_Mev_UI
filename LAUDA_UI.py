@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         self.rdwdgts = (
             # lauda
             TangoLED(self.config.get('pump', 'binp/nbi/lauda/6230_7'), self.pushButton_34),  # Pump On
-            TangoLED(self.config.get('valve', 'binp/nbi/lauda/6230_0'), self.pushButton_31),  # Valve
+            TangoLED(self.config.get('valve_state', 'binp/nbi/lauda/6230_0'), self.pushButton_31),  # Valve
             TangoLabel(self.config.get('return', 'binp/nbi/lauda/1012'), self.label_23),       # Return
         )
         # writable attributes TangoWidgets list

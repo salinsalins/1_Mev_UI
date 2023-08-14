@@ -1,0 +1,20 @@
+{
+    "main_window": {
+        "size": [
+            447,
+            93
+        ],
+        "position": [
+            2012,
+            533
+        ]
+    },
+    "pump": "binp/nbi/laudapy/pump",
+    "valve": "binp/nbi/laudapy/valve",
+    "valve_state": "binp/nbi/laudapy/valve_state",
+    "return": "binp/nbi/laudapy/return_temp",
+    "setpoint": "binp/nbi/laudapy/set_point",
+    "run": "binp/nbi/laudapy/run",
+    "enable": "binp/nbi/laudapy/enable",
+    "reset": "binp/nbi/laudapy/reset"
+}
