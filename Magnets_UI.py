@@ -5,14 +5,12 @@ Created on Jul 28, 2019
 @author: sanin
 """
 import sys
-if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
 
-from threading import Timer
+if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
-import PyQt5.QtGui as QtGui
 
 from TangoWidgets.TangoCheckBox import TangoCheckBox
 from TangoWidgets.TangoLED import TangoLED
@@ -20,10 +18,12 @@ from TangoWidgets.TangoLabel import TangoLabel
 from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
 from TangoWidgets.Utils import *
 
+from config_logger import config_logger
+
 ORGANIZATION_NAME = 'BINP'
-APPLICATION_NAME = 'Magnets_UI'
+APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
 APPLICATION_NAME_SHORT = APPLICATION_NAME
-APPLICATION_VERSION = '1_0'
+APPLICATION_VERSION = '1.1'
 CONFIG_FILE = APPLICATION_NAME_SHORT + '.json'
 UI_FILE = APPLICATION_NAME_SHORT + '.ui'
 
@@ -42,10 +42,10 @@ class MainWindow(QMainWindow):
         # Load the UI
         uic.loadUi(UI_FILE, self)
         # default main window parameters
-        #self.resize(QSize(480, 640))                # size
-        #self.move(QPoint(50, 50))                   # position
-        #self.setWindowTitle(APPLICATION_NAME)       # title
-        #self.setWindowIcon(QtGui.QIcon('icons_red_xHd_icon.ico'))  # icon
+        self.resize(QSize(480, 640))                # size
+        self.move(QPoint(50, 50))                   # position
+        self.setWindowTitle(APPLICATION_NAME)       # title
+        # self.setWindowIcon(QtGui.QIcon('icons_red_xHd_icon.ico'))  # icon
 
         print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
 
@@ -54,8 +54,8 @@ class MainWindow(QMainWindow):
         # read attributes TangoWidgets list
         self.rdwdgts = (
             # magnet 1
-            #TangoLED('binp/nbi/magnet1/output_state', self.pushButton_38),
-            self.create_widget('TangoLED', 'binp/nbi/magnet1/output_state', 'pushButton_38'),
+            TangoLED('binp/nbi/magnet1/output_state', self.pushButton_38),
+            # self.create_widget('TangoLED', 'binp/nbi/magnet1/output_state', 'pushButton_38'),
             TangoLabel('binp/nbi/magnet1/voltage', self.label_149),
             TangoLabel('binp/nbi/magnet1/current', self.label_151),
             # magnet 2
@@ -122,13 +122,13 @@ class MainWindow(QMainWindow):
 
         self.logger.info('\n------------ Attribute Config Finished -----------\n')
 
-    def create_widget(self, class_name, attribute, control):
-        try:
-            widget = getattr(self, control)
-            result = globals()[class_name](attribute, widget)
-        except:
-            result = None
-        return result
+    # def create_widget(self, class_name, attribute, control):
+    #     try:
+    #         widget = getattr(self, control)
+    #         result = globals()[class_name](attribute, widget)
+    #     except:
+    #         result = None
+    #     return result
 
     def cb3_callback(self, value):
         if value:
