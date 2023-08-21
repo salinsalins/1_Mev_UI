@@ -204,14 +204,11 @@ class TangoAttribute:
             if time.time() - self.read_time > self.read_timeout:
                 self.logger.warning('Timeout reading %s', self.full_name)
                 self.cancel_asynch_request(self.read_call_id)
-                self.read_call_id = None
                 # self.disconnect()
                 raise
         except TangoAttributeConnectionFailed:
             # self.logger.info('Attribute %s read Connection Failed' % self.full_name)
-            # self.device_proxy.cancel_asynch_request(self.read_call_id)
             self.cancel_asynch_request(self.read_call_id)
-            self.read_call_id = None
             self.read_result = None
             self.disconnect()
             raise
@@ -220,21 +217,33 @@ class TangoAttribute:
         except:
             log_exception(self.logger, 'Attribute %s read Exception:', self.full_name)
             self.cancel_asynch_request(self.read_call_id)
-            self.read_call_id = None
             self.read_result = None
             self.disconnect()
             raise
         return self.value()
 
-    def cancel_asynch_request(self, read_call_id):
+    def cancel_asynch_request(self, read_call_id=None):
+        if read_call_id is None:
+            read_call_id = self.read_call_id
         try:
             self.device_proxy.cancel_asynch_request(read_call_id)
+            self.read_call_id = None
         except KeyboardInterrupt:
             raise
         except:
-            pass
+            log_exception()
 
     def read_sync(self, force=False):
+        # process waited async requests
+        if self.read_call_id is not None:
+            try:
+                self.read_result = self.device_proxy.read_attribute_reply(self.read_call_id)
+                self.read_call_id = None
+                return
+            except KeyboardInterrupt:
+                raise
+            except tango.AsynReplyNotArrived:
+                self.cancel_asynch_request(self.read_call_id)
         if self.use_history and not force and self.attribute_polled:
             at = self.device_proxy.attribute_history(self.attribute_name, 1)[0]
             t = at.time.totime()
@@ -242,10 +251,6 @@ class TangoAttribute:
                 self.read_result = at
         else:
             self.read_result = self.device_proxy.read_attribute(self.attribute_name)
-        # cancel waited async requests
-        if self.read_call_id is not None:
-            self.device_proxy.cancel_asynch_request(self.read_call_id)
-        self.read_call_id = None
 
     def read_async(self):
         if self.read_call_id is not None:
