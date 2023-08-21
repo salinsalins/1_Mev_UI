@@ -10,7 +10,7 @@ import time
 
 from PyQt5.QtWidgets import QWidget
 import tango
-from tango import DeviceProxy, GreenMode, DeviceAttribute
+from tango import DeviceProxy, GreenMode, DeviceAttribute, DevFailed
 
 from TangoWidgets.Utils import split_attribute_name
 from config_logger import config_logger
@@ -85,7 +85,7 @@ class TangoAttribute:
             return True
         except KeyboardInterrupt:
             raise
-        except:
+        except DevFailed:
             log_exception('Can not connect attribute %s' % self.full_name)
             self.disconnect()
             return False
@@ -121,8 +121,8 @@ class TangoAttribute:
                 # self.logger.debug('Device %s for %s exists', self.device_name, self.attribute_name)
             except KeyboardInterrupt:
                 raise
-            except:
-                self.logger.info(self.logger, 'Device %s can not be reached', self.device_name)
+            except DevFailed:
+                self.logger.info('Device %s can not be reached', self.device_name)
             return TangoAttribute.devices[self.device_name]
         try:
             dp = tango.DeviceProxy(self.device_name)
@@ -131,7 +131,7 @@ class TangoAttribute:
             return dp
         except KeyboardInterrupt:
             raise
-        except:
+        except DevFailed:
             log_exception('Device %s creation exception: ' % self.device_name, no_info=True)
             return None
 
@@ -195,7 +195,7 @@ class TangoAttribute:
         try:
             self.reconnect()
             if not self.connected:
-                raise TangoAttributeConnectionFailed('')
+                raise TangoAttributeConnectionFailed('Attribute is not connected')
             if force or sync:
                 self.read_sync(force)
             else:
@@ -204,6 +204,7 @@ class TangoAttribute:
             if time.time() - self.read_time > self.read_timeout:
                 self.logger.warning('Timeout reading %s', self.full_name)
                 self.cancel_asynch_request(self.read_call_id)
+                self.read_result = None
                 # self.disconnect()
                 raise
         except TangoAttributeConnectionFailed:
@@ -225,6 +226,8 @@ class TangoAttribute:
     def cancel_asynch_request(self, read_call_id=None):
         if read_call_id is None:
             read_call_id = self.read_call_id
+        if read_call_id is None:
+            return
         try:
             self.device_proxy.cancel_asynch_request(read_call_id)
             self.read_call_id = None
@@ -234,6 +237,7 @@ class TangoAttribute:
             log_exception()
 
     def read_sync(self, force=False):
+        self.read_result = None
         # process waited async requests
         if self.read_call_id is not None:
             try:
