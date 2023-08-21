@@ -37,7 +37,7 @@ class TangoAbstractSpinBox(TangoWriteWidget):
             if math.isnan(self.attribute.value()):
                 self.widget.setValue(0.0)
             else:
-                self.widget.setValue(self.attribute.value())
+                self.widget.setValue(int(self.attribute.value()))
         except:
             self.logger.warning('Exception set widget value for %s' % self.attribute.full_name)
             self.logger.debug('Exception Info:', exc_info=True)

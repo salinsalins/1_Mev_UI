@@ -10,7 +10,7 @@ import time
 
 from PyQt5.QtWidgets import QWidget
 import tango
-from tango import DeviceProxy, GreenMode, DeviceAttribute, DevFailed
+from tango import DeviceProxy, GreenMode, DeviceAttribute, DevFailed, DevLong
 
 from TangoWidgets.Utils import split_attribute_name
 from config_logger import config_logger
@@ -304,7 +304,10 @@ class TangoAttribute:
             raise
 
     def write_sync(self, value):
-        self.device_proxy.write_attribute(self.attribute_name, value)
+        v = value
+        if self.read_result.type == DevLong:
+            v = int(value)
+        self.device_proxy.write_attribute(self.attribute_name, v)
 
     def write_async(self, value):
         if self.write_call_id is None:

@@ -36,7 +36,7 @@ class Timer_on_LED(TangoLED):
             value = self.value
         else:
             self.value = value
-        self.widget.setEnabled(value)
+        self.widget.setEnabled(bool(value))
         return self.widget.isEnabled()
 
     def decorate(self):
