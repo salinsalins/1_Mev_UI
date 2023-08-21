@@ -91,7 +91,7 @@ class TangoWidget:
                 self.set_widget_value()
             self.decorate()
         except TangoAttributeConnectionFailed:
-            log_exception(self.logger)
+            # log_exception(self.logger, no_info=True)
             # self.set_attribute_value()
             self.decorate()
         except KeyboardInterrupt:
