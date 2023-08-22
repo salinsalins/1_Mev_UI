@@ -7,6 +7,8 @@ Created on Jul 28, 2019
 
 import os.path
 import sys
+# import os
+# print(os.getenv('PYTHONPATH'))
 
 if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
 
