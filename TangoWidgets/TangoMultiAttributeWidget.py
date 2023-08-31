@@ -4,16 +4,15 @@ Created on Feb 25, 2020
 
 @author: sanin
 '''
-
+import logging
 import sys
 import time
 
-from PyQt5.QtWidgets import QWidget
 import tango
+from PyQt5.QtWidgets import QWidget
 
-from .Utils import *
-from .TangoWidget import TangoWidget
-from .TangoAttribute import TangoAttribute
+from TangoWidgets.TangoWidget import TangoWidget
+from TangoWidgets.TangoAttribute import TangoAttribute
 
 
 class TangoMultiAttributeWidget(TangoWidget):

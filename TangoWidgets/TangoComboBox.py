@@ -5,12 +5,10 @@ Created on Jan 3, 2020
 @author: sanin
 """
 import sys
-import time
 
 from PyQt5.QtWidgets import QComboBox
 
 from TangoWidgets.TangoWriteWidget import TangoWriteWidget
-from TangoWidgets.TangoWidget import TangoWidget
 
 
 class TangoComboBox(TangoWriteWidget):

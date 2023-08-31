@@ -1,6 +1,5 @@
-from PyQt5.QtWidgets import QPushButton
-from .TangoAttribute import TangoAttribute
-from.TangoLED import TangoLED
+from TangoWidgets.TangoAttribute import TangoAttribute
+from TangoWidgets.TangoLED import TangoLED
 
 
 class Lauda_ready_LED(TangoLED):

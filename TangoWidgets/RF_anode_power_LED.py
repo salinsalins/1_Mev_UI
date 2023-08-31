@@ -1,16 +1,16 @@
 import tango
 from PyQt5.QtWidgets import QPushButton
-from .TangoAttribute import TangoAttribute
-from.TangoLED import TangoLED
+from TangoWidgets.TangoAttribute import TangoAttribute
+from TangoWidgets.TangoLED import TangoLED
 
 
 class RF_anode_power_LED(TangoLED):
     def __init__(self, name, widget: QPushButton):
-        self.state = TangoAttribute('binp/nbi/rfpowercontrol/state')
+        self.st = TangoAttribute('binp/nbi/rfpowercontrol/state')
         self.ap = TangoAttribute('binp/nbi/rfpowercontrol/anode_power')
         super().__init__(name, widget)
 
-    def read(self, force=False):
+    def read(self, force=False, **kwargs):
         self.st.read(force)
         self.ap.read(force)
         return self.attribute.read(force)
@@ -20,8 +20,7 @@ class RF_anode_power_LED(TangoLED):
 
     def set_widget_value(self):
         try:
-            if not self.state.value != tango.DevState.RUNNING or \
-                    self.ap.value > 50.0
+            if not (self.st.value != tango.DevState.RUNNING or self.ap.value > 50.0):
                 self.widget.setChecked(False)
             else:
                 self.widget.setChecked(True)

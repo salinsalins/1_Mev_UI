@@ -4,9 +4,11 @@ Created on Mar 2, 2020
 
 @author: sanin
 """
+import logging
+import time
 
-from .Utils import *
-from .TangoAttribute import TangoAttribute
+from TangoWidgets.TangoAttribute import TangoAttribute
+from config_logger import config_logger
 
 
 class TangoMultiAttribute:

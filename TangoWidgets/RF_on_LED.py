@@ -1,6 +1,4 @@
-from PyQt5.QtWidgets import QPushButton
-from .TangoAttribute import TangoAttribute
-from.TangoLED import TangoLED
+from TangoWidgets.TangoLED import TangoLED
 
 
 class RF_on_LED(TangoLED):

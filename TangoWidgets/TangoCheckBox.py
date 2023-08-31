@@ -4,15 +4,10 @@ Created on Jan 3, 2020
 
 @author: sanin
 """
-import sys
-import time
 
 from PyQt5.QtWidgets import QCheckBox
 
-# from TangoWidgets.Utils import *
 from TangoWidgets.TangoWriteWidget import TangoWriteWidget
-from TangoWidgets.TangoWidget import TangoWidget
-from TangoWidgets.images import checkbox_resources
 
 
 class TangoCheckBox(TangoWriteWidget):

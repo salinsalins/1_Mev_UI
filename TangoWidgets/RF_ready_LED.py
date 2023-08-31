@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QPushButton
-from .TangoAttribute import TangoAttribute
-from.TangoLED import TangoLED
+from TangoWidgets.TangoAttribute import TangoAttribute
+from TangoWidgets.TangoLED import TangoLED
 
 
 class RF_ready_LED(TangoLED):
@@ -10,7 +10,7 @@ class RF_ready_LED(TangoLED):
         self.pr = TangoAttribute('binp/nbi/timing/di60')  #
         super().__init__(name, widget)
 
-    def read(self, force=False):
+    def read(self, force=False, **kwargs):
         self.av.read(True)
         self.cc.read(True)
         self.pr.read(True)

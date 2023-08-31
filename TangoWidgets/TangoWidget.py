@@ -6,15 +6,12 @@ Created on Jan 1, 2020
 """
 
 import sys
-import time
 import logging
 
 from PyQt5.QtWidgets import QWidget
-import tango
 
 from config_logger import config_logger
 from log_exception import log_exception
-# from TangoWidgets.Utils import *
 from TangoWidgets.TangoAttribute import TangoAttribute, TangoAttributeConnectionFailed
 
 

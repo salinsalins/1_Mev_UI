@@ -8,12 +8,10 @@ import logging
 import sys
 import time
 
-from PyQt5.QtWidgets import QWidget
 import tango
-from tango import DeviceProxy, GreenMode, DeviceAttribute, DevFailed, DevLong
+from tango import DevFailed, DevLong
 
 from TangoUtils import split_attribute_name
-# from TangoWidgets.Utils import split_attribute_name
 from config_logger import config_logger
 from log_exception import log_exception
 

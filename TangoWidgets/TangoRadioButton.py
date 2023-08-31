@@ -4,7 +4,6 @@ Created on Jan 3, 2020
 
 @author: sanin
 '''
-import sys
 import time
 from PyQt5.QtWidgets import QRadioButton
 from TangoWidgets.TangoWidget import TangoWidget

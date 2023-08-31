@@ -10,8 +10,6 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QAbstractSpinBox
 from TangoWidgets.TangoWriteWidget import TangoWriteWidget
 
-import tango
-
 
 class TangoAbstractSpinBox(TangoWriteWidget):
     def __init__(self, name, widget: QAbstractSpinBox, readonly=False):
