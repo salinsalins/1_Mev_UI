@@ -9,7 +9,7 @@ import time
 
 from PyQt5.QtWidgets import QCheckBox
 
-from .Utils import *
+# from TangoWidgets.Utils import *
 from TangoWidgets.TangoWriteWidget import TangoWriteWidget
 from TangoWidgets.TangoWidget import TangoWidget
 from TangoWidgets.images import checkbox_resources
