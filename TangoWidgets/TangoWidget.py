@@ -13,8 +13,8 @@ import tango
 
 from config_logger import config_logger
 from log_exception import log_exception
-from .Utils import *
-from .TangoAttribute import TangoAttribute, TangoAttributeConnectionFailed
+from TangoWidgets.Utils import *
+from TangoWidgets.TangoAttribute import TangoAttribute, TangoAttributeConnectionFailed
 
 
 class TangoWidget:

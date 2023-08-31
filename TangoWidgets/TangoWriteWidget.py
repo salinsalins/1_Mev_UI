@@ -7,7 +7,7 @@ Created on Jan 17, 2020
 from PyQt5.QtWidgets import QWidget
 from tango import DevFailed
 
-from TangoAttribute import TangoAttributeConnectionFailed
+from TangoWidgets.TangoAttribute import TangoAttributeConnectionFailed
 from TangoWidgets.TangoWidget import TangoWidget
 
 
