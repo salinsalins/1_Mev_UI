@@ -4,16 +4,26 @@ from.TangoLED import TangoLED
 
 
 class Lauda_ready_LED(TangoLED):
-    def __init__(self, name, widget):
+    def __init__(self, name, widget, valve='valve_state', pump='pump'):
         self.value = False
         if not name.endswith('/'):
             name += '/'
-        self.valve = TangoAttribute(name + '6230_0')  # output valve
-        self.motor = TangoAttribute(name + '6230_7')  # Lauda pump motor
-        super().__init__(name + '6230_7', widget)
+        if '/' in valve:
+            valve_name = valve
+        else:
+            valve_name = name + valve
+        if '/' in pump:
+            pump_name = pump
+        else:
+            pump_name = name + pump
+        self.valve = TangoAttribute(valve_name)  # output valve
+        self.motor = TangoAttribute(pump_name)  # pump motor
+        super().__init__(pump_name, widget)
+        # self.motor = self.attribute  # Lauda pump motor
 
-    def read(self, force=False):
-        self.value = self.motor.read(True) and self.valve.read(True)
+    def read(self, force=None, sync=None):
+        self.value = False
+        self.value = self.motor.read(force) and self.valve.read(force)
         return self.value
 
     def decorate(self):
@@ -25,6 +35,8 @@ class Lauda_ready_LED(TangoLED):
                 self.widget.setChecked(True)
             else:
                 self.widget.setChecked(False)
+        except KeyboardInterrupt:
+           raise
         except:
             self.widget.setChecked(False)
         return self.widget.isChecked()

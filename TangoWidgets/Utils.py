@@ -20,44 +20,47 @@ import PyQt5.QtGui as QtGui
 import tango
 import tango.server
 
-
-def config_logger(name=__name__, level=logging.DEBUG, tango_logging=False):
-
-    def tango_handler_emit(logger_handler, record):
-        try:
-            msg = logger_handler.format(record)
-            if logger_handler.level >= logging.CRITICAL:
-                tango.server.Device.fatal_stream(msg)
-            elif logger_handler.level >= logging.ERROR:
-                tango.server.Device.error_stream(msg)
-            elif logger_handler.level >= logging.WARNING:
-                tango.server.Device.warn_stream(msg)
-            elif logger_handler.level >= logging.INFO:
-                tango.server.Device.info_stream(msg)
-            elif logger_handler.level >= logging.DEBUG:
-                tango.server.Device.debug_stream(msg)
-        except Exception:
-            logger_handler.handleError(record)
-
-    logger = logging.getLogger(name)
-    #logger.setLevel(level)
-    if not logger.hasHandlers():
-        logger.propagate = False
-        f_str = '%(asctime)s,%(msecs)3d %(levelname)-7s %(filename)s %(funcName)s(%(lineno)s) %(message)s'
-        log_formatter = logging.Formatter(f_str, datefmt='%H:%M:%S')
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(log_formatter)
-        logger.addHandler(console_handler)
-        logger.setLevel(level)
-        # add tango logger
-        if tango_logging:
-            tango_handler = logging.Handler()
-            tango_handler.setFormatter(log_formatter)
-            tango_handler.emit = tango_handler_emit
-            logger.addHandler(tango_handler)
-    return logger
+# ^(  +)except:
+# $1except KeyboardInterrupt:\n$1   raise\n$1except:
 
 
+# def config_logger(name=__name__, level=logging.DEBUG, tango_logging=False):
+#
+#     def tango_handler_emit(logger_handler, record):
+#         try:
+#             msg = logger_handler.format(record)
+#             if logger_handler.level >= logging.CRITICAL:
+#                 tango.server.Device.fatal_stream(msg)
+#             elif logger_handler.level >= logging.ERROR:
+#                 tango.server.Device.error_stream(msg)
+#             elif logger_handler.level >= logging.WARNING:
+#                 tango.server.Device.warn_stream(msg)
+#             elif logger_handler.level >= logging.INFO:
+#                 tango.server.Device.info_stream(msg)
+#             elif logger_handler.level >= logging.DEBUG:
+#                 tango.server.Device.debug_stream(msg)
+#         except Exception:
+#             logger_handler.handleError(record)
+#
+#     logger = logging.getLogger(name)
+#     #logger.setLevel(level)
+#     if not logger.hasHandlers():
+#         logger.propagate = False
+#         f_str = '%(asctime)s,%(msecs)3d %(levelname)-7s %(filename)s %(funcName)s(%(lineno)s) %(message)s'
+#         log_formatter = logging.Formatter(f_str, datefmt='%H:%M:%S')
+#         console_handler = logging.StreamHandler()
+#         console_handler.setFormatter(log_formatter)
+#         logger.addHandler(console_handler)
+#         logger.setLevel(level)
+#         # add tango logger
+#         if tango_logging:
+#             tango_handler = logging.Handler()
+#             tango_handler.setFormatter(log_formatter)
+#             tango_handler.emit = tango_handler_emit
+#             logger.addHandler(tango_handler)
+#     return logger
+#
+#
 def get_all_widgets(obj: QtWidgets.QWidget):
     wgts = []
     lout = obj.layout()
@@ -110,6 +113,8 @@ def get_widget_state(obj, config, name=None):
             config[name] = str(obj.toPlainText())
         elif isinstance(obj, QtWidgets.QSpinBox) or isinstance(obj, QtWidgets.QDoubleSpinBox):
             config[name] = obj.value()
+    except KeyboardInterrupt:
+       raise
     except:
         return
 
@@ -139,6 +144,8 @@ def set_widget_state(obj, config, name=None):
             obj.setPlainText(config[name])
         elif isinstance(obj, QtWidgets.QSpinBox) or isinstance(obj, QtWidgets.QDoubleSpinBox):
             obj.setValue(config[name])
+    except KeyboardInterrupt:
+       raise
     except:
         return
 
@@ -169,6 +176,8 @@ def restore_settings(obj, widgets=(), file_name='config.json'):
             set_widget_state(w, obj.config)
         # OK message
         obj.logger.log(logging.INFO, 'Configuration restored from %s' % file_name)
+    except KeyboardInterrupt:
+       raise
     except:
         obj.logger.log(logging.WARNING, 'Configuration restore error from %s' % file_name)
         obj.logger.log(logging.DEBUG, 'Exception:', exc_info=True)
@@ -190,6 +199,8 @@ def save_settings(self, widgets=(), file_name='config.json'):
         # OK message
         self.logger.info('Configuration saved to %s' % file_name)
         return True
+    except KeyboardInterrupt:
+       raise
     except:
         self.logger.log(logging.WARNING, 'Configuration save error to %s' % file_name)
         self.logger.log(logging.DEBUG, 'Exception:', exc_info=True)
@@ -239,16 +250,12 @@ def get_tango_device_attribute_property(device_name: str, attr_name: str, prop_n
     return prop
 
 
-def log_exception(self, text='Exception: '):
-    msg = text + str(sys.exc_info()[1])
-    self.logger.warning(msg)
-    self.logger.debug(msg, exc_info=True)
-
-
 def create_widget(self, class_name, attribute, control):
     try:
         widget = getattr(self, control)
         return globals()[class_name](attribute, widget)
+    except KeyboardInterrupt:
+       raise
     except:
         return None
 

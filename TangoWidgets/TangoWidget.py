@@ -5,31 +5,33 @@ Created on Jan 1, 2020
 @author: sanin
 """
 
-import sys; sys.path.append('../TangoUtils')
+import sys
 import time
-import logging
 
 from PyQt5.QtWidgets import QWidget
 import tango
 
+from config_logger import config_logger
+from log_exception import log_exception
+from .Utils import *
 from .TangoAttribute import TangoAttribute, TangoAttributeConnectionFailed
-from config_logger import *
+
 
 class TangoWidget:
     ERROR_TEXT = '****'
     RECONNECT_TIMEOUT = 3.0    # seconds
     DEVICES = {}
 
-    def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG):
-        # configure logging
-        self.logger = config_logger(level=level)
+    def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
         self.name = name
         self.widget = widget
         self.widget.tango_widget = self
+        # configure logging
+        self.logger = config_logger(level=level)
         self.update_dt = 0.0
         # create attribute proxy
         self.attribute = TangoAttribute(name, level=level, readonly=readonly)
-        # first update with set widget value from attribute
+        # first update
         self.update(decorate_only=False)
 
     def decorate_error(self, *args, **kwargs):
@@ -41,6 +43,7 @@ class TangoWidget:
         if hasattr(self.widget, 'setText') and text is not None:
             self.widget.setText(text)
         self.widget.setStyleSheet('color: red')
+        self.logger.debug('%s decorated invalid' % self.name)
 
     def decorate_invalid_data_format(self, text: str = None, *args, **kwargs):
         self.decorate_invalid(text, *args, **kwargs)
@@ -55,7 +58,7 @@ class TangoWidget:
         # self.widget.setStyleSheet('color: black')
         self.widget.setStyleSheet('')
 
-    def read(self, force=False):
+    def read(self, force=None, sync=None):
         return self.attribute.read(force)
 
     def write(self, value):
@@ -82,22 +85,21 @@ class TangoWidget:
         self.widget.blockSignals(bs)
 
     def update(self, decorate_only=False) -> None:
-        t0 = time.time()
         try:
             self.read()
             if not decorate_only:
                 self.set_widget_value()
             self.decorate()
         except TangoAttributeConnectionFailed:
-            # self.logger.info('Exception: %s' % sys.exc_info()[1])
-            self.set_attribute_value()
+            # log_exception(self.logger, no_info=True)
+            # self.set_attribute_value()
             self.decorate()
+        except KeyboardInterrupt:
+           raise
         except:
-            self.logger.info('Exception: %s' % sys.exc_info()[1])
-            self.logger.debug('Exception Info:', exc_info=True)
-            self.set_attribute_value()
+            log_exception(self.logger)
+            # self.set_attribute_value()
             self.decorate()
-        self.update_dt = time.time() - t0
 
     def decorate(self):
         if not self.attribute.connected:
@@ -107,11 +109,11 @@ class TangoWidget:
             self.logger.debug('%s is non scalar' % self.name)
             self.decorate_invalid_data_format()
         elif not self.attribute.is_valid():
-            self.logger.debug('%s is invalid' % self.name)
+            # self.logger.debug('%s is invalid' % self.name)
             self.decorate_invalid_quality()
         else:
             if not self.compare():
-                self.logger.debug('%s not equal' % self.name)
+                # self.logger.debug('%s not equal' % self.name)
                 self.decorate_not_equal()
             else:
                 self.decorate_valid()
@@ -127,28 +129,33 @@ class TangoWidget:
             return
         try:
             self.write(value)
+        except KeyboardInterrupt:
+           raise
         except:
-            pass
+            self.logger.info('Exception: %s' % sys.exc_info()[1])
+            self.logger.debug('Exception Info:', exc_info=True)
 
     def get_widget_value(self):
         result = None
         if hasattr(self.widget, 'value'):
             result = self.widget.value()
-        elif hasattr(self.widget, 'getChecked'):
-            result = self.widget.getChecked()
-        elif hasattr(self.widget, 'getText'):
-            result = self.widget.getText()
+        elif hasattr(self.widget, 'isChecked'):
+            result = self.widget.isChecked()
+        elif hasattr(self.widget, 'text'):
+            result = self.widget.text()
         return result
 
     def callback(self, value):
-        # self.logger.debug('Callback entry')
         if self.attribute.is_readonly():
             return
         try:
             self.write(value)
             self.read(True)
             self.decorate()
+        except KeyboardInterrupt:
+           raise
         except:
-            self.logger.warning('Exception in callback')
-            self.logger.debug('Exception Info:', exc_info=True)
+            log_exception('Exception in callback')
+            # self.logger.warning('Exception in callback')
+            # self.logger.debug('Exception Info:', exc_info=True)
             self.decorate()
