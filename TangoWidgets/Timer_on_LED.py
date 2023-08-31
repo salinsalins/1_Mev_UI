@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QPushButton
 
-from TangoAttribute import TangoAttribute
+from TangoWidgets.TangoAttribute import TangoAttribute
 from TangoUtils import split_attribute_name
 from log_exception import log_exception
-from .TangoLED import TangoLED
+from TangoWidgets.TangoLED import TangoLED
 
 
 class Timer_on_LED(TangoLED):
