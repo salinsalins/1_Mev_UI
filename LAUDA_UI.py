@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
         self.timer.start(TIMER_PERIOD)
 
     def setpoint_valueChanged(self):
-        self.lauda.write_attribute('set_point_remote', self.spinBox_4.value())
+        self.lauda.write_attribute(self.config.get('remote', '1100'), self.spinBox_4.value())
 
     def lauda_pump_on_callback(self, value):
         if value:

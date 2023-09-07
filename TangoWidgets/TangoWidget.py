@@ -76,7 +76,7 @@ class TangoWidget:
         if hasattr(self.widget, 'setValue'):
             self.widget.setValue(self.attribute.value())
         elif hasattr(self.widget, 'setChecked'):
-            self.widget.setChecked(self.attribute.value())
+            self.widget.setChecked(bool(self.attribute.value()))
         elif hasattr(self.widget, 'setText'):
             self.widget.setText(self.attribute.text())
         # restore update events for widget

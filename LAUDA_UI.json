@@ -5,8 +5,8 @@
             93
         ],
         "position": [
-            81,
-            254
+            510,
+            50
         ]
     },
     "pump": "binp/nbi/laudapy/pump",
@@ -16,5 +16,6 @@
     "setpoint": "binp/nbi/laudapy/set_point",
     "run": "binp/nbi/laudapy/run",
     "enable": "binp/nbi/laudapy/enable",
-    "reset": "binp/nbi/laudapy/reset"
+    "reset": "binp/nbi/laudapy/reset",
+    "remote": "binp/nbi/laudapy/set_point_remote"
 }
