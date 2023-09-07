@@ -362,8 +362,8 @@ class MainWindow(QMainWindow):
         self.timer.stop()
 
     def timer_handler(self):
+        t0 = time.time()
         try:
-            t0 = time.time()
             if len(self.widgets) <= 0:
                 return
             # during pulse
@@ -416,7 +416,7 @@ class MainWindow(QMainWindow):
             raise
         except:
             log_exception('Unexpected exception in timer callback')
-
+        # self.logger.debug("total time %s s", time.time() - t0)
 
 if __name__ == '__main__':
     # Create the GUI application
