@@ -19,7 +19,8 @@ class TangoComboBox(TangoWriteWidget):
     def decorate_error(self):
         self.widget.setStyleSheet('color: red')
 
-    def update(self, decorate_only=False):
+    def update(self, decorate_only=True):
+        # self.logger.debug('Entry')
         super().update(decorate_only)
 
     def set_widget_value(self):

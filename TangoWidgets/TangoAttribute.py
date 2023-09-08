@@ -229,11 +229,11 @@ class TangoAttribute:
             return
         try:
             self.device_proxy.cancel_asynch_request(read_call_id)
-            self.read_call_id = None
         except KeyboardInterrupt:
             raise
         except:
             log_exception()
+        self.read_call_id = None
 
     def read_sync(self, force=False):
         self.read_result = None

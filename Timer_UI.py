@@ -256,14 +256,19 @@ class MainWindow(QMainWindow):
             self.label_5.setVisible(False)
             # run button
             self.pushButton.setText('Shoot')
+            self.comboBox.blockSignals(True)
             self.comboBox.tango_widget.callback(value)
             self.comboBox.tango_widget.read(force=True, sync=True)
+            self.comboBox.blockSignals(False)
         elif value == 1:  # switch to periodical
             # check protection interlock
             if not self.check_protection_interlock():
                 self.logger.error('Protection - Shot has been rejected')
+                self.comboBox.blockSignals(True)
                 self.comboBox.setCurrentIndex(0)
+                self.comboBox.tango_widget.callback(0)
                 self.comboBox.setStyleSheet('border: 3px solid red')
+                self.comboBox.blockSignals(False)
                 QMessageBox.critical(self, 'Protection', 'Protection interlock.\nShot has been rejected.',
                                      QMessageBox.Ok)
                 return
@@ -274,18 +279,23 @@ class MainWindow(QMainWindow):
                 raise
             except:
                 remained = -1
-            if remained >= 0:
+            if remained > 0:
                 self.logger.error('Period - Shot has been rejected')
+                self.comboBox.blockSignals(True)
                 self.comboBox.setCurrentIndex(0)
+                self.comboBox.tango_widget.callback(0)
                 self.comboBox.setStyleSheet('border: 3px solid red')
+                self.comboBox.blockSignals(False)
                 QMessageBox.critical(self, 'Period', 'Period is not expired.\nShot has been rejected.', QMessageBox.Ok)
                 return
             # show remained
             self.label_4.setVisible(True)
             self.label_5.setVisible(True)
             self.max_time = self.read_max_time() / 1000.0
-            self.comboBox.tango_widget.callback(value)
+            self.comboBox.blockSignals(True)
+            self.comboBox.tango_widget.callback(1)
             self.comboBox.tango_widget.read(force=True, sync=True)
+            self.comboBox.blockSignals(False)
 
     def read_max_time(self):
         mt = 0.0
