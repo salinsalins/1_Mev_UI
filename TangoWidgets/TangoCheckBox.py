@@ -29,16 +29,17 @@ class TangoCheckBox(TangoWriteWidget):
         self.widget.setEnabled(False)
 
     def decorate_invalid(self, text: str = None, *args, **kwargs):
-        self.widget.setStyleSheet('\
-                QCheckBox::indicator:checked {image:url(:/checked_red.png);}\
-                QCheckBox::indicator:unchecked {image: url(:/unchecked_red.png);}')
+        # self.widget.setStyleSheet('\
+        #         QCheckBox::indicator:checked {image:url(:/images/checked_red.png);}\
+        #         QCheckBox::indicator:unchecked {image: url(:/images/unchecked_red.png);}')
+        self.widget.setStyleSheet('QCheckBox: enabled {background - color: red;}')
         self.widget.setEnabled(True)
 
     def decorate_valid(self):
         self.widget.setStyleSheet('')
         self.widget.setEnabled(True)
 
-    def compare(self):
+    def compare(self, *args, **kwargs):
         try:
             return int(self.attribute.value()) == self.widget.isChecked()
         except:

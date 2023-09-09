@@ -64,7 +64,7 @@ class TangoAttribute:
                 return False
             if not self.attribute_name:
                 self.connected = True
-                self.logger.info('Device only %s has been connected' % self.full_name)
+                self.logger.debug('%s has been connected for device only' % self.full_name)
                 return True
             self.set_config()
             # t0 = time.time()
@@ -80,7 +80,7 @@ class TangoAttribute:
             # self.read_result.value = None
             # self.read_async()
             self.connected = True
-            self.logger.info('Attribute %s has been connected' % self.full_name)
+            self.logger.debug('Attribute %s has been connected' % self.full_name)
             return True
         except KeyboardInterrupt:
             raise

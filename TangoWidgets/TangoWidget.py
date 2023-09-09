@@ -24,6 +24,7 @@ class TangoWidget:
         self.name = name
         self.widget = widget
         self.widget.tango_widget = self
+        self.decorate_only = kwargs.get('decorate_only', False)
         # configure logging
         self.logger = config_logger(level=level)
         self.update_dt = 0.0
@@ -32,16 +33,18 @@ class TangoWidget:
         # first update
         self.update(decorate_only=False)
 
-    def decorate_error(self, *args, **kwargs):
+    def decorate_error(self, text: str = None, *args, **kwargs):
+        if text is None:
+            text = TangoWidget.ERROR_TEXT
         if hasattr(self.widget, 'setText'):
-            self.widget.setText(TangoWidget.ERROR_TEXT)
+            self.widget.setText(text)
         self.widget.setStyleSheet('color: gray')
 
     def decorate_invalid(self, text: str = None, *args, **kwargs):
         if hasattr(self.widget, 'setText') and text is not None:
             self.widget.setText(text)
         self.widget.setStyleSheet('color: red')
-        self.logger.debug('%s decorated invalid' % self.name)
+        # self.logger.debug('%s decorated invalid' % self.name)
 
     def decorate_invalid_data_format(self, text: str = None, *args, **kwargs):
         self.decorate_invalid(text, *args, **kwargs)
@@ -53,11 +56,10 @@ class TangoWidget:
         self.decorate_invalid(*args, **kwargs)
 
     def decorate_valid(self, *args, **kwargs):
-        # self.widget.setStyleSheet('color: black')
         self.widget.setStyleSheet('')
 
     def read(self, force=None, sync=None):
-        return self.attribute.read(force)
+        return self.attribute.read(force, sync)
 
     def write(self, value):
         return self.attribute.write(value)
@@ -82,7 +84,9 @@ class TangoWidget:
         # restore update events for widget
         self.widget.blockSignals(bs)
 
-    def update(self, decorate_only=False) -> None:
+    def update(self, decorate_only=None) -> None:
+        if decorate_only is None:
+            decorate_only = self.decorate_only
         try:
             self.read()
             if not decorate_only:
@@ -91,20 +95,19 @@ class TangoWidget:
         except TangoAttributeConnectionFailed:
             # log_exception(self.logger, no_info=True)
             # self.set_attribute_value()
-            self.decorate()
+            self.decorate_error()
         except KeyboardInterrupt:
            raise
         except:
             log_exception(self.logger)
-            # self.set_attribute_value()
-            self.decorate()
+            self.decorate_error()
 
     def decorate(self):
         if not self.attribute.connected:
-            self.logger.debug('%s is not connected' % self.name)
+            # self.logger.debug('%s is not connected' % self.name)
             self.decorate_error()
         elif not self.attribute.is_scalar():
-            self.logger.debug('%s is non scalar' % self.name)
+            # self.logger.debug('%s is non scalar' % self.name)
             self.decorate_invalid_data_format()
         elif not self.attribute.is_valid():
             # self.logger.debug('%s is invalid' % self.name)

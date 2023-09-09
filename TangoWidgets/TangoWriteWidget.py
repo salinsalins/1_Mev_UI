@@ -22,12 +22,11 @@ class TangoWriteWidget(TangoWidget):
         # update which set widget value from attribute
         self.update(decorate_only=False)
 
-    def decorate_error(self):
+    def decorate_error(self, *args, **kwargs):
         self.widget.setStyleSheet('color: gray')
         self.widget.setEnabled(False)
 
-    def decorate_invalid(self, text: str = None, *args, **kwargs):
-        # self.widget.setStyleSheet('color: red; selection-color: red')
+    def decorate_invalid(self, *args, **kwargs):
         self.widget.setStyleSheet('color: red')
         self.widget.setEnabled(True)
 
@@ -39,7 +38,7 @@ class TangoWriteWidget(TangoWidget):
         super().update(decorate_only)
 
     # compare widget displayed value and read attribute value
-    def compare(self):
+    def compare(self, delta_v=None):
         if self.attribute.is_readonly():
             return True
         else:
@@ -48,7 +47,7 @@ class TangoWriteWidget(TangoWidget):
                 if v is None:
                     return False
                 if isinstance(v, bool):
-                    return self.attribute.value() == self.widget.value()
+                    return v == self.widget.value()
                 elif isinstance(v, int):
                     v1 = int(self.widget.value())
                     if abs(v - v1) > 1:
@@ -56,7 +55,13 @@ class TangoWriteWidget(TangoWidget):
                         return False
                 elif isinstance(v, float):
                     v1 = float(self.widget.value())
-                    if abs(v - v1) > abs(v * 1e-3):
+                    if delta_v in None:
+                        vs = self.attribute.format % v
+                        v1s = self.attribute.format % v1
+                        flag = v1s == vs
+                    else:
+                        flag = abs(v - v1) <= abs(v * 1e-3)
+                    if not flag:
                         self.logger.debug('%s %s != %s', self.attribute.full_name, v, v1)
                         return False
                 elif isinstance(v, str):
