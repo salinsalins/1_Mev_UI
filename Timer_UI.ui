@@ -813,7 +813,8 @@
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true"/>
+               <string notr="true"> QCheckBox::indicator:checked {image: url(:/checked_red.png);}
+ QCheckBox::indicator:unchecked{ image: url(:/unchecked_red.png);}</string>
               </property>
               <property name="text">
                <string/>
@@ -2210,6 +2211,11 @@
              <bold>false</bold>
             </font>
            </property>
+           <property name="styleSheet">
+            <string notr="true"> QCheckBox::indicator:checked {image: url(:/checked_red.png);}
+ QCheckBox::indicator:unchecked{ image: url(:/unchecked_red.png);}
+</string>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -3246,7 +3252,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="TangoWidgets/images/checkbox.qrc"/>
+  <include location="checkbox.qrc"/>
  </resources>
  <connections/>
  <designerdata>
