@@ -4,6 +4,7 @@ Created on Jan 3, 2020
 
 @author: sanin
 """
+import images.checkbox_resources # DO NOT delete
 
 from PyQt5.QtWidgets import QCheckBox
 
@@ -30,8 +31,8 @@ class TangoCheckBox(TangoWriteWidget):
 
     def decorate_invalid(self, text: str = None, *args, **kwargs):
         self.widget.setStyleSheet('\
-                QCheckBox::indicator:checked {image:url(:/images/checked_red.png);}\
-                QCheckBox::indicator:unchecked {image: url(:/images/unchecked_red.png);}')
+                QCheckBox::indicator:checked {image:url(:checked_red.png);}\
+                QCheckBox::indicator:unchecked {image: url(:unchecked_red.png);}')
         # self.widget.setStyleSheet('QCheckBox: enabled {background - color: red;}')
         self.widget.setEnabled(True)
 

@@ -5,8 +5,6 @@ Created on Jan 17, 2020
 @author: sanin
 """
 
-import images.checkbox_resources
-
 from PyQt5.QtWidgets import QWidget
 from tango import DevFailed
 

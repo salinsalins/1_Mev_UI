@@ -813,8 +813,7 @@
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true"> QCheckBox::indicator:checked {image: url(:/checked_red.png);}
- QCheckBox::indicator:unchecked{ image: url(:/unchecked_red.png);}</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string/>
@@ -2212,9 +2211,7 @@
             </font>
            </property>
            <property name="styleSheet">
-            <string notr="true"> QCheckBox::indicator:checked {image: url(:/checked_red.png);}
- QCheckBox::indicator:unchecked{ image: url(:/unchecked_red.png);}
-</string>
+            <string notr="true"/>
            </property>
            <property name="text">
             <string/>
