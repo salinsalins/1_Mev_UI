@@ -4,6 +4,9 @@ Created on Jan 17, 2020
 
 @author: sanin
 """
+
+import images.checkbox_resources
+
 from PyQt5.QtWidgets import QWidget
 from tango import DevFailed
 
@@ -55,7 +58,7 @@ class TangoWriteWidget(TangoWidget):
                         return False
                 elif isinstance(v, float):
                     v1 = float(self.widget.value())
-                    if delta_v in None:
+                    if delta_v is None:
                         vs = self.attribute.format % v
                         v1s = self.attribute.format % v1
                         flag = v1s == vs
