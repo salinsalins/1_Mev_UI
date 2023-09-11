@@ -7,13 +7,17 @@ Created on Jul 28, 2019
 
 import sys
 
-from TangoCheckBox import TangoCheckBox
-
 if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
+
+from log_exception import log_exception
+
+from TangoCheckBox import TangoCheckBox
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
+
+import tango
 
 from TangoWidgets.TangoWidget import TangoWidget
 from TangoWidgets.TangoLED import TangoLED
@@ -60,42 +64,43 @@ class MainWindow(QMainWindow):
         self.rdwdgts = []
         self.wtwdgts = []
         layout = self.gridLayout
-        device_name = self.config.get('device', 'binp/test/test_pet')
-        dp = tango.DeviceProxy(device_name)
+        device_name = self.config.get('device', 'binp/nbi/testPET')
+        try:
+            dp = tango.DeviceProxy(device_name)
+        except tango.ConnectionFailed:
+            log_exception('Device proxy can not be connected, exiting')
+            exit(-1)
+        pet_type = dp.read_attribute('device_type')
+        self.label_1.setText(pet_type.value)
+        ip = dp.read_attribute('IP')
+        self.label_2.setText(ip.value)
         al = dp.get_attribute_list()
         row = 2
         for a in al:
             ac = dp.get_attribute_config_ex(a)
             if a.startswith('do'):
-                print(a)
+                lb = QLabel(a + ': ', self)
+                layout.addWidget(lb, row, 0)
                 cb = QCheckBox(a, self)
                 layout.addWidget(cb, row, 1)
                 row += 1
-                # self.rdwdgts.append(TangoLED(device_name + '/' + a, cb))
                 self.rdwdgts.append(TangoCheckBox(device_name + '/' + a, cb))
+            if a.startswith('di'):
+                lb = QLabel(a + ': ', self)
+                layout.addWidget(lb, row, 0)
+                cb = QCheckBox(a, self)
+                layout.addWidget(cb, row, 1)
+                row += 1
+                self.rdwdgts.append(TangoLED(device_name + '/' + a, cb))
+            if a.startswith('ai'):
+                lb = QLabel(a + ': ', self)
+                layout.addWidget(lb, row, 0)
+                lb = QLabel(a, self)
+                layout.addWidget(lb, row, 1)
+                row += 1
+                self.rdwdgts.append(TangoLabel(device_name + '/' + a, lb))
 
-        # attributes
-        # self.rdwdgts = (
-        #     # lauda
-        #     TangoLED(self.config.get('pump', 'binp/nbi/lauda/6230_7'), self.pushButton_34),  # Pump On
-        #     TangoLED(self.config.get('valve_state', 'binp/nbi/lauda/6230_0'), self.pushButton_31),  # Valve
-        #     TangoLabel(self.config.get('return', 'binp/nbi/lauda/1012'), self.label_23),       # Return
-        # )
-        # writable attributes TangoWidgets list
-        # self.wtwdgts = (
-            # lauda
-        #     TangoAbstractSpinBox(self.config.get('setpoint', 'binp/nbi/lauda/6200'), self.spinBox_4, False),  # SetPoint
-        #     TangoPushButton(self.config.get('valve', 'binp/nbi/lauda/6210_3'), self.pushButton_4, False),  # Valve
-        #     TangoPushButton(self.config.get('run', 'binp/nbi/lauda/6210_1'), self.pushButton_3, False),  # Run
-        #     TangoPushButton(self.config.get('enable', 'binp/nbi/lauda/6210_0'), self.pushButton_6, False),  # Enable
-        #     TangoPushButton(self.config.get('reset', 'binp/nbi/lauda/6210_2'), self.pushButton_9, False),  # Reset
-        # )
-        #
         TangoWidget.RECONNECT_TIMEOUT = 5.0
-        # Connect signals with slots
-        # self.pushButton_3.clicked.connect(self.lauda_pump_on_callback)
-        # self.spinBox_4.valueChanged.connect(self.setpoint_valueChanged)
-        self.lauda = None
         # Defile and start timer callback task
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer_handler)
