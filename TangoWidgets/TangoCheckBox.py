@@ -4,12 +4,14 @@ Created on Jan 3, 2020
 
 @author: sanin
 """
-import images.cb_resources # DO NOT delete
 
 from PyQt5.QtWidgets import QCheckBox
 
 from TangoWidgets.TangoWriteWidget import TangoWriteWidget
 
+from TangoWidgets.images import cb_resources
+
+# import cb_resources # DO NOT delete
 
 class TangoCheckBox(TangoWriteWidget):
     def __init__(self, name, widget: QCheckBox, readonly=False):
