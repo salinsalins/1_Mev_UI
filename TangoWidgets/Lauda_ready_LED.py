@@ -1,5 +1,8 @@
+from tango import DevFailed
+
 from TangoWidgets.TangoAttribute import TangoAttribute
 from TangoWidgets.TangoLED import TangoLED
+from log_exception import log_exception
 
 
 class Lauda_ready_LED(TangoLED):
@@ -22,7 +25,14 @@ class Lauda_ready_LED(TangoLED):
 
     def read(self, force=None, sync=None):
         self.value = False
-        self.value = self.motor.read(force) and self.valve.read(force)
+        try:
+            self.value = self.motor.read(force) and self.valve.read(force)
+        # except KeyboardInterrupt:
+        #     raise
+        except DevFailed:
+            pass
+        # except:
+        #     log_exception()
         return self.value
 
     def decorate(self):

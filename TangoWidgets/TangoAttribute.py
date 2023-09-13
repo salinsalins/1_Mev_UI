@@ -61,6 +61,10 @@ class TangoAttribute:
         try:
             self.device_proxy = self.create_device_proxy()
             if self.device_proxy is None:
+                self.disconnect()
+                return False
+            if hasattr(self.device_proxy, 'device_type') and self.device_proxy.device_type == "Uninitialized":
+                self.disconnect()
                 return False
             if not self.attribute_name:
                 self.connected = True
@@ -196,7 +200,7 @@ class TangoAttribute:
             if not self.connected:
                 raise TangoAttributeConnectionFailed('Attribute is not connected')
             if force or sync:
-                self.read_sync(force)
+                self.read_sync(True)
             else:
                 self.read_async()
         except tango.AsynReplyNotArrived:
