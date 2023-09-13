@@ -132,22 +132,25 @@ class TangoAttribute:
             TangoAttribute.devices[self.device_name] = dp
             self.logger.info('Device proxy for %s has been created' % self.device_name)
             return dp
-        except KeyboardInterrupt:
-            raise
+        # except KeyboardInterrupt:
+        #     raise
         except DevFailed:
             log_exception('Device %s creation exception: ' % self.device_name, no_info=True)
             return None
 
     def set_config(self):
+        self.coeff = 1.0
+        self.config = None
+        self.format = None
+        self.readonly = None
+        self.attribute_polled = None
         if self.device_proxy is None:
             return
         self.config = self.device_proxy.get_attribute_config_ex(self.attribute_name)[0]
         self.format = self.config.format
         try:
             self.coeff = float(self.config.display_unit)
-        except KeyboardInterrupt:
-            raise
-        except:
+        except (TypeError, ValueError):
             self.coeff = 1.0
         self.readonly = self.readonly or self.is_readonly()
         self.attribute_polled = self.device_proxy.is_attribute_polled(self.attribute_name)
