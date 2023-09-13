@@ -150,7 +150,9 @@ class TangoAttribute:
         self.format = self.config.format
         try:
             self.coeff = float(self.config.display_unit)
-        except (TypeError, ValueError):
+        except KeyboardInterrupt:
+            raise
+        except:
             self.coeff = 1.0
         self.readonly = self.readonly or self.is_readonly()
         self.attribute_polled = self.device_proxy.is_attribute_polled(self.attribute_name)
