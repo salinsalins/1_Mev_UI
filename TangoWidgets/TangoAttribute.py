@@ -37,7 +37,7 @@ class TangoAttribute:
         self.reconnect_timeout = 5.0
         self.read_result = None
         self.config = None
-        self.format = None
+        self.format = '%s'
         self.coeff = 1.0
         self.readonly = readonly
         self.force_read = False
@@ -70,7 +70,16 @@ class TangoAttribute:
                 self.connected = True
                 self.logger.debug('%s has been connected for device only' % self.full_name)
                 return True
-            self.set_config()
+            self.config = self.device_proxy.get_attribute_config_ex(self.attribute_name)[0]
+            self.format = self.config.format
+            try:
+                self.coeff = float(self.config.display_unit)
+            except KeyboardInterrupt:
+                raise
+            except:
+                self.coeff = 1.0
+            self.readonly = self.readonly or self.is_readonly()
+            self.attribute_polled = self.device_proxy.is_attribute_polled(self.attribute_name)
             # t0 = time.time()
             # try:
             #     self.read_async()
@@ -142,7 +151,6 @@ class TangoAttribute:
         self.coeff = 1.0
         self.config = None
         self.format = None
-        self.readonly = None
         self.attribute_polled = None
         if self.device_proxy is None:
             return
