@@ -15,6 +15,7 @@ from TangoWidgets.RF_ready_LED import RF_ready_LED
 from TangoWidgets.RF_on_LED import RF_on_LED
 from TangoWidgets.TangoPushButton import TangoPushButton
 from TangoWidgets.Utils import *
+from config_logger import config_logger
 
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = 'RF_System_UI'
