@@ -15,6 +15,7 @@ from TangoWidgets.TangoLED import TangoLED
 from TangoWidgets.TangoLabel import TangoLabel
 from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
 from TangoWidgets.Utils import *
+from config_logger import config_logger
 
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = 'Voltages_UI'

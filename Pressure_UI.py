@@ -16,6 +16,7 @@ from TangoWidgets.TangoLabel import TangoLabel
 from TangoWidgets.TangoPushButton import TangoPushButton
 from TangoWidgets.TangoPfiefferPressure import TangoPfiefferPressure
 from TangoWidgets.Utils import *
+from config_logger import config_logger
 
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = 'Pressure_UI'

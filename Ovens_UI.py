@@ -27,6 +27,7 @@ from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
 from TangoWidgets.TangoRadioButton import TangoRadioButton
 from TangoWidgets.TangoPushButton import TangoPushButton
 from TangoWidgets.Utils import *
+from config_logger import config_logger
 
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = 'Ovens_UI'
