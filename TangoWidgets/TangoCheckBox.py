@@ -11,7 +11,7 @@ from TangoWidgets.TangoWriteWidget import TangoWriteWidget
 
 from TangoWidgets.images import cb_resources
 
-# import cb_resources # DO NOT delete
+# import images.cb_resources # DO NOT delete
 
 class TangoCheckBox(TangoWriteWidget):
     def __init__(self, name, widget: QCheckBox, readonly=False):
