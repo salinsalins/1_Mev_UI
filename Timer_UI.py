@@ -433,6 +433,7 @@ class MainWindow(QMainWindow):
     def restore_state(self, state=None):
         if state is None:
             if len(self.saved_states) <= 0:
+                self.logger.info('State stack is empty')
                 return
             state = self.saved_states.pop()
         func_list = [self.checkBox_8.setChecked,
