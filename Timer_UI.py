@@ -7,6 +7,8 @@ Created on Jul 28, 2019
 
 import os.path
 import sys
+from collections import deque
+
 # import os
 # print(os.getenv('PYTHONPATH'))
 
@@ -47,6 +49,8 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(None)
         # logging config
         self.logger = config_logger()
+        #
+        self.saved_states = deque(maxlen=100)
         # members definition
         self.n = 0
         self.elapsed = 0.0
@@ -136,21 +140,24 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),  # adc stop
         ]
         # more individual widgets
-        self.timer_on_led = Timer_on_LED('binp/nbi/timing/pulse_start0', self.pushButton_29)  # timer on led
+        # timer on led
+        self.timer_on_led = Timer_on_LED('binp/nbi/timing/pulse_start0',
+                                         self.pushButton_29)
         self.timer_device = self.timer_on_led.attribute.device_proxy
         # interlock widgets
         # self.anode_power_led = TangoLED('sys/test/1/boolean_scalar', self.pushButton_33)
-        self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok', self.pushButton_33)
+        self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok',
+                                        self.pushButton_33)
         self.lauda = Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30)
         self.rf = RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32)  # RF system ready
         self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31)  # PG offset on
         # elapsed widget
         self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
         # combine all processed widgets
-        self.widgets = self.rdwdgts + self.wtwdgts + self.enable_widgets + self.stop_widgets + [self.lauda, self.rf,
-                                                                                                self.pg,
-                                                                                                self.anode_power_led,
-                                                                                                self.elapsed_widget]
+        self.widgets = (self.rdwdgts + self.wtwdgts +
+                        self.enable_widgets + self.stop_widgets +
+                        [self.lauda, self.rf, self.pg,
+                         self.anode_power_led, self.elapsed_widget])
         self.max_time = 0.0
         # *******************************
         # additional decorations
@@ -230,6 +237,7 @@ class MainWindow(QMainWindow):
 
     def execute_button_clicked(self):
         try:
+            self.save_state()
             file_name = os.path.join('scripts', self.comboBox_2.currentText() + '.py')
             with open(file_name, 'r') as scriptfile:
                 s = scriptfile.read()
@@ -239,6 +247,7 @@ class MainWindow(QMainWindow):
         except KeyboardInterrupt:
             raise
         except:
+            self.restore_state()
             self.comboBox_2.setStyleSheet('color: red')
             self.logger.warning('Error action execution')
             self.logger.debug('', exc_info=True)
@@ -247,7 +256,8 @@ class MainWindow(QMainWindow):
         self.frame.setVisible(True)
         # self.resize(QSize(418, 751))
         self.resize(QSize(self.gridLayout_2.sizeHint().width(),
-                          self.gridLayout_2.sizeHint().height() + self.gridLayout_3.sizeHint().height()))
+                          self.gridLayout_2.sizeHint().height() +
+                          self.gridLayout_3.sizeHint().height()))
 
     def single_periodical_callback(self, value):
         if value == 0:  # switch to single
@@ -269,7 +279,8 @@ class MainWindow(QMainWindow):
                 self.comboBox.tango_widget.callback(0)
                 self.comboBox.setStyleSheet('border: 3px solid red')
                 self.comboBox.blockSignals(False)
-                QMessageBox.critical(self, 'Protection', 'Protection interlock.\nShot has been rejected.',
+                QMessageBox.critical(self, 'Protection',
+                                     'Protection interlock.\nShot has been rejected.',
                                      QMessageBox.Ok)
                 return
             # check for period expired
@@ -286,7 +297,9 @@ class MainWindow(QMainWindow):
                 self.comboBox.tango_widget.callback(0)
                 self.comboBox.setStyleSheet('border: 3px solid red')
                 self.comboBox.blockSignals(False)
-                QMessageBox.critical(self, 'Period', 'Period is not expired.\nShot has been rejected.', QMessageBox.Ok)
+                QMessageBox.critical(self, 'Period',
+                                     'Period is not expired.\nShot has been rejected.',
+                                     QMessageBox.Ok)
                 return
             # show remained
             self.label_4.setVisible(True)
@@ -329,7 +342,8 @@ class MainWindow(QMainWindow):
                 if not self.check_protection_interlock():
                     self.logger.error('Shot has been rejected')
                     self.pushButton.setStyleSheet('border: 3px solid red')
-                    QMessageBox.critical(self, 'Interlock', 'Shot has been rejected', QMessageBox.Ok)
+                    QMessageBox.critical(self, 'Interlock',
+                                         'Shot has been rejected', QMessageBox.Ok)
                     return
                 self.max_time = self.read_max_time() / 1000.0
                 self.timer_on_led.attribute.device_proxy.write_attribute('Start_single', 1)
@@ -337,13 +351,15 @@ class MainWindow(QMainWindow):
             for w in self.enable_widgets:
                 if w.get_widget_value():
                     return
-            # QMessageBox.critical(self, 'No active channels', 'No active channels', QMessageBox.Ok)
+            # QMessageBox.critical(self, 'No active channels',
+            # 'No active channels', QMessageBox.Ok)
         elif self.comboBox.currentIndex() == 1:  # periodical
             if self.timer_on_led.value:  # pulse is on
                 self.pulse_off('Interrupted by user!')
             self.comboBox.setCurrentIndex(0)
 
     def pulse_off(self, msg='Interrupted by user.'):
+        self.save_state()
         n = 0
         for w in self.enable_widgets:
             try:
@@ -354,8 +370,8 @@ class MainWindow(QMainWindow):
             except:
                 n += 1
         if n <= 0:
-            # QMessageBox.critical(self, 'Emergency', 'Shot has been interrupted', QMessageBox.Ok)
-            a = QMessageBox.question(self, 'Shot Interrupted', msg + '\n\nRestore enabled channels?',
+            a = QMessageBox.question(self, 'Shot Interrupted',
+                                     msg + '\n\nRestore enabled channels?',
                                      QMessageBox.Yes | QMessageBox.No)
             if a == QMessageBox.Yes:
                 self.restore = True
@@ -365,6 +381,95 @@ class MainWindow(QMainWindow):
         self.logger.warnibg("Can not stop pulse")
         self.logger.debug("Exception ", exc_info=True)
         self.restore = False
+
+    def save_state(self):
+        func_list = [self.checkBox_8.isChecked,
+                     self.spinBox_10.value,
+                     self.spinBox_11.value,
+                     self.checkBox_9.isChecked,
+                     self.spinBox_12.value,
+                     self.spinBox_13.value,
+                     self.checkBox_10.isChecked,
+                     self.spinBox_14.value,
+                     self.spinBox_15.value,
+                     self.checkBox_11.isChecked,
+                     self.spinBox_16.value,
+                     self.spinBox_17.value,
+                     self.checkBox_12.isChecked,
+                     self.spinBox_18.value,
+                     self.spinBox_19.value,
+                     self.checkBox_13.isChecked,
+                     self.spinBox_20.value,
+                     self.spinBox_21.value,
+                     self.checkBox_14.isChecked,
+                     self.spinBox_22.value,
+                     self.spinBox_23.value,
+                     self.checkBox_15.isChecked,
+                     self.spinBox_24.value,
+                     self.spinBox_25.value,
+                     self.checkBox_16.isChecked,
+                     self.spinBox_26.value,
+                     self.spinBox_27.value,
+                     self.checkBox_17.isChecked,
+                     self.spinBox_28.value,
+                     self.spinBox_29.value,
+                     self.checkBox_18.isChecked,
+                     self.spinBox_30.value,
+                     self.spinBox_31.value,
+                     self.checkBox_19.isChecked,
+                     self.spinBox_32.value,
+                     self.spinBox_33.value,
+                     self.spinBox_34.value,
+                     self.spinBox_35.value]
+        state = [f() for f in func_list]
+        self.saved_states.append(state)
+        self.logger.debug('State saved to index %s', len(self.saved_states)-1)
+
+    def restore_state(self):
+        if len(self.saved_states) <= 0:
+            return
+        state = self.saved_states.pop()
+        func_list = [self.checkBox_8.setChecked,
+                     self.spinBox_10.setValue,
+                     self.spinBox_11.setValue,
+                     self.checkBox_9.setChecked,
+                     self.spinBox_12.setValue,
+                     self.spinBox_13.setValue,
+                     self.checkBox_10.setChecked,
+                     self.spinBox_14.setValue,
+                     self.spinBox_15.setValue,
+                     self.checkBox_11.setChecked,
+                     self.spinBox_16.setValue,
+                     self.spinBox_17.setValue,
+                     self.checkBox_12.setChecked,
+                     self.spinBox_18.setValue,
+                     self.spinBox_19.setValue,
+                     self.checkBox_13.setChecked,
+                     self.spinBox_20.setValue,
+                     self.spinBox_21.setValue,
+                     self.checkBox_14.setChecked,
+                     self.spinBox_22.setValue,
+                     self.spinBox_23.setValue,
+                     self.checkBox_15.setChecked,
+                     self.spinBox_24.setValue,
+                     self.spinBox_25.setValue,
+                     self.checkBox_16.setChecked,
+                     self.spinBox_26.setValue,
+                     self.spinBox_27.setValue,
+                     self.checkBox_17.setChecked,
+                     self.spinBox_28.setValue,
+                     self.spinBox_29.setValue,
+                     self.checkBox_18.setChecked,
+                     self.spinBox_30.setValue,
+                     self.spinBox_31.setValue,
+                     self.checkBox_19.setChecked,
+                     self.spinBox_32.setValue,
+                     self.spinBox_33.setValue,
+                     self.spinBox_34.setValue,
+                     self.spinBox_35.setValue]
+        for i in range(len(state)):
+            func_list[i](state[i])
+        self.logger.debug('State restored from index %s', len(self.saved_states))
 
     def onQuit(self):
         # Save global settings
@@ -395,11 +500,13 @@ class MainWindow(QMainWindow):
                 if self.restore:
                     for w in self.enable_widgets:
                         try:
-                            self.timer_device.write_attribute(w.attribute.attribute_name, w.last_state)
+                            self.timer_device.write_attribute(w.attribute.attribute_name,
+                                                              w.last_state)
                         except KeyboardInterrupt:
                             raise
                         except:
                             pass
+                    self.save_state()
                     self.restore = False
             # remained
             try:
