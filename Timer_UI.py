@@ -51,6 +51,7 @@ class MainWindow(QMainWindow):
         self.logger = config_logger()
         #
         self.saved_states = deque(maxlen=100)
+        self.last_state = []
         # members definition
         self.n = 0
         self.elapsed = 0.0
@@ -424,6 +425,7 @@ class MainWindow(QMainWindow):
         state = [f() for f in func_list]
         self.saved_states.append(state)
         self.logger.debug('State saved to index %s', len(self.saved_states)-1)
+        return state
 
     def restore_state(self):
         if len(self.saved_states) <= 0:
@@ -470,6 +472,7 @@ class MainWindow(QMainWindow):
         for i in range(len(state)):
             func_list[i](state[i])
         self.logger.debug('State restored from index %s', len(self.saved_states))
+        return state
 
     def onQuit(self):
         # Save global settings
@@ -479,6 +482,9 @@ class MainWindow(QMainWindow):
     def timer_handler(self):
         t0 = time.time()
         try:
+            state = self.save_state()
+            if state == self.last_state:
+                self.saved_states.pop()
             if len(self.widgets) <= 0:
                 return
             # during pulse
