@@ -238,7 +238,6 @@ class MainWindow(QMainWindow):
 
     def execute_button_clicked(self):
         try:
-            self.save_state()
             file_name = os.path.join('scripts', self.comboBox_2.currentText() + '.py')
             with open(file_name, 'r') as scriptfile:
                 s = scriptfile.read()
@@ -248,7 +247,6 @@ class MainWindow(QMainWindow):
         except KeyboardInterrupt:
             raise
         except:
-            self.restore_state()
             self.comboBox_2.setStyleSheet('color: red')
             self.logger.warning('Error action execution')
             self.logger.debug('', exc_info=True)
@@ -383,7 +381,7 @@ class MainWindow(QMainWindow):
         self.logger.debug("Exception ", exc_info=True)
         self.restore = False
 
-    def save_state(self):
+    def get_state(self):
         func_list = [self.checkBox_8.isChecked,
                      self.spinBox_10.value,
                      self.spinBox_11.value,
@@ -423,14 +421,20 @@ class MainWindow(QMainWindow):
                      self.spinBox_34.value,
                      self.spinBox_35.value]
         state = [f() for f in func_list]
+        return state
+
+    def save_state(self, state=None):
+        if state is None:
+            state = self.get_state()
         self.saved_states.append(state)
         self.logger.debug('State saved to index %s', len(self.saved_states)-1)
         return state
 
-    def restore_state(self):
-        if len(self.saved_states) <= 0:
-            return
-        state = self.saved_states.pop()
+    def restore_state(self, state=None):
+        if state is None:
+            if len(self.saved_states) <= 0:
+                return
+            state = self.saved_states.pop()
         func_list = [self.checkBox_8.setChecked,
                      self.spinBox_10.setValue,
                      self.spinBox_11.setValue,
@@ -471,6 +475,7 @@ class MainWindow(QMainWindow):
                      self.spinBox_35.setValue]
         for i in range(len(state)):
             func_list[i](state[i])
+        self.last_state = state
         self.logger.debug('State restored from index %s', len(self.saved_states))
         return state
 
@@ -482,9 +487,10 @@ class MainWindow(QMainWindow):
     def timer_handler(self):
         t0 = time.time()
         try:
-            state = self.save_state()
-            if state == self.last_state:
-                self.saved_states.pop()
+            state = self.get_state()
+            if state != self.last_state:
+                self.save_state(self.last_state)
+                self.last_state = state
             if len(self.widgets) <= 0:
                 return
             # during pulse
@@ -512,7 +518,7 @@ class MainWindow(QMainWindow):
                             raise
                         except:
                             pass
-                    self.save_state()
+                    self.restore_state()
                     self.restore = False
             # remained
             try:

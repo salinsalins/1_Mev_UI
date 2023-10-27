@@ -1,2 +1,2 @@
-#print('Restore')
+print('Restore')
 self.restore_state()
