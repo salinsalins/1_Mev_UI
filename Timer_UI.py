@@ -374,7 +374,7 @@ class MainWindow(QMainWindow):
                                      QMessageBox.Yes | QMessageBox.No)
             if a == QMessageBox.Yes:
                 self.restore = True
-            self.max_time = 0.0
+            # self.max_time = 0.0
             self.timer_on_led.set_widget_value(0.0)
             return
         self.logger.warnibg("Can not stop pulse")
