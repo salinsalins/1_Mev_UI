@@ -27,14 +27,18 @@ class TangoComboBox(TangoWriteWidget):
         #bs = self.widget.blockSignals(True)
         try:
             self.widget.setCurrentIndex(int(self.attribute.value()))
+        except KeyboardInterrupt:
+            raise
         except:
             pass
         #self.widget.blockSignals(bs)
         return self.attribute.value()
 
-    def compare(self):
+    def compare(self, delta_v=None):
         try:
             return int(self.attribute.value()) == self.widget.currentIndex()
+        except KeyboardInterrupt:
+            raise
         except:
             self.logger.debug('Exception in ComboBox compare', exc_info=True)
             return False
@@ -44,6 +48,8 @@ class TangoComboBox(TangoWriteWidget):
             try:
                 self.write(int(value))
                 self.decorate_valid()
+            except KeyboardInterrupt:
+                raise
             except:
                 self.logger.debug('Exception %s in callback', sys.exc_info()[1])
                 self.decorate_error()
