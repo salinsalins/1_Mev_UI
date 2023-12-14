@@ -29,6 +29,7 @@ class TangoAttribute:
     def __init__(self, name: str, level=logging.DEBUG, readonly=False, use_history=True, **kwargs):
         # configure logging
         self.logger = kwargs.get('logger', config_logger(level=level))
+        #
         self.time = time.time()
         self.full_name = str(name)
         self.device_name, self.attribute_name = split_attribute_name(self.full_name)

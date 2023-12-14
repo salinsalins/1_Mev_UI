@@ -72,6 +72,7 @@ class TangoWidget:
 
     def set_widget_value(self):
         if not (self.attribute.is_scalar() and self.attribute.is_valid()):
+            self.logger.debug('Value from invalid attribute is not set')
             # dont set value from invalid attribute
             return
         # block update events for widget
@@ -99,7 +100,7 @@ class TangoWidget:
             # self.set_attribute_value()
             self.decorate_error()
         except KeyboardInterrupt:
-           raise
+            raise
         except:
             log_exception(self.logger)
             self.decorate_error()
@@ -133,10 +134,9 @@ class TangoWidget:
         try:
             self.write(value)
         except KeyboardInterrupt:
-           raise
+            raise
         except:
-            self.logger.info('Exception: %s' % sys.exc_info()[1])
-            self.logger.debug('Exception Info:', exc_info=True)
+            log_exception('Exception')
 
     def get_widget_value(self):
         result = None
@@ -156,9 +156,7 @@ class TangoWidget:
             self.read(True)
             self.decorate()
         except KeyboardInterrupt:
-           raise
+            raise
         except:
             log_exception('Exception in callback')
-            # self.logger.warning('Exception in callback')
-            # self.logger.debug('Exception Info:', exc_info=True)
             self.decorate()
