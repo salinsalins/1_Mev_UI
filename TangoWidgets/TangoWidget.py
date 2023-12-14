@@ -22,12 +22,14 @@ class TangoWidget:
 
     def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
         self.name = name
-        self.widget = widget
-        self.widget.tango_widget = self
-        self.decorate_only = kwargs.get('decorate_only', False)
         # configure logging
         self.logger = config_logger(level=level)
+        #
+        self.decorate_only = kwargs.get('decorate_only', False)
         self.update_dt = 0.0
+        # widget
+        self.widget = widget
+        self.widget.tango_widget = self
         # create attribute proxy
         self.attribute = TangoAttribute(name, level=level, readonly=readonly)
         # first update

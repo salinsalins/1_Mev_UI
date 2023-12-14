@@ -75,7 +75,7 @@ class TangoWriteWidget(TangoWidget):
                     return False
                 return True
             except KeyboardInterrupt:
-               raise
+                raise
             except:
                 self.logger.debug('%s Exception in compare' % self.attribute.full_name, exc_info=True)
                 return False
