@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-Created on Jul 28, 2019
+Created on Mar 3, 2024
 
 @author: sanin
 """
@@ -9,15 +9,9 @@ import os.path
 import sys
 from collections import deque
 
-# import os
-# print(os.getenv('PYTHONPATH'))
-
-if '../TangoUtils' not in sys.path: sys.path.append('../TangoUtils')
-
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
-import PyQt5.QtGui as QtGui
 
 from TangoWidgets.TangoCheckBox import TangoCheckBox
 from TangoWidgets.TangoComboBox import TangoComboBox
@@ -28,6 +22,11 @@ from TangoWidgets.Timer_on_LED import Timer_on_LED
 from TangoWidgets.RF_ready_LED import RF_ready_LED
 from TangoWidgets.Lauda_ready_LED import Lauda_ready_LED
 
+util_path = os.path.realpath('../TangoUtils')
+if util_path not in sys.path:
+    sys.path.append(util_path)
+del util_path
+
 from config_logger import config_logger
 from log_exception import log_exception
 from TangoWidgets.Utils import *
@@ -35,7 +34,7 @@ from TangoWidgets.Utils import *
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
 APPLICATION_NAME_SHORT = APPLICATION_NAME
-APPLICATION_VERSION = '3.0'
+APPLICATION_VERSION = '0.1'
 CONFIG_FILE = APPLICATION_NAME_SHORT + '.json'
 UI_FILE = APPLICATION_NAME_SHORT + '.ui'
 
@@ -426,11 +425,7 @@ class MainWindow(QMainWindow):
     def save_state(self, state=None):
         if state is None:
             state = self.get_state()
-        if state == self.last_state:
-            self.logger.debug('State save ignored')
-            return None
         self.saved_states.append(state)
-        self.last_state = state
         self.logger.debug('State saved to index %s', len(self.saved_states) - 1)
         return state
 
@@ -492,7 +487,10 @@ class MainWindow(QMainWindow):
     def timer_handler(self):
         t0 = time.time()
         try:
-            self.save_state()
+            state = self.get_state()
+            if state != self.last_state:
+                self.save_state(self.last_state)
+                self.last_state = state
             if len(self.widgets) <= 0:
                 return
             # during pulse
@@ -549,7 +547,10 @@ class MainWindow(QMainWindow):
             log_exception('Unexpected exception in timer callback')
         # self.logger.debug("total time %s s", time.time() - t0)
 
+
 if __name__ == '__main__':
+    if len(sys.argv) >= 2:
+        CONFIG_FILE = sys.argv[1]
     # Create the GUI application
     app = QApplication(sys.argv)
     # Instantiate the main window
