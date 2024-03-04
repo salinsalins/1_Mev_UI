@@ -1,2 +1,2 @@
 print('Restore')
-self.restore_state()
+self.set_state()

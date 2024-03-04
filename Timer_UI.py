@@ -377,9 +377,20 @@ class MainWindow(QMainWindow):
             # self.max_time = 0.0
             self.timer_on_led.set_widget_value(0.0)
             return
-        self.logger.warnibg("Can not stop pulse")
-        self.logger.debug("Exception ", exc_info=True)
+        self.logger.error("Can not stop pulse")
+        self.logger.debug("Last Exception ", exc_info=True)
         self.restore = False
+
+    def save_state(self, state=None):
+        if state is None:
+            state = self.get_state()
+        if state == self.last_state:
+            self.logger.debug('State save ignored')
+            return None
+        self.saved_states.append(state)
+        self.last_state = state
+        self.logger.debug('State saved to index %s', len(self.saved_states) - 1)
+        return state
 
     def get_state(self):
         func_list = [self.checkBox_8.isChecked,
@@ -423,23 +434,15 @@ class MainWindow(QMainWindow):
         state = [f() for f in func_list]
         return state
 
-    def save_state(self, state=None):
-        if state is None:
-            state = self.get_state()
-        if state == self.last_state:
-            self.logger.debug('State save ignored')
-            return None
-        self.saved_states.append(state)
-        self.last_state = state
-        self.logger.debug('State saved to index %s', len(self.saved_states) - 1)
-        return state
-
-    def restore_state(self, state=None):
+    def set_state(self, state=None):
         if state is None:
             if len(self.saved_states) <= 0:
                 self.logger.info('State stack is empty')
                 return
             state = self.saved_states.pop()
+            state_id = 'index %s' % len(self.saved_states)
+        else:
+            state_id = str(state)[:10]
         func_list = [self.checkBox_8.setChecked,
                      self.spinBox_10.setValue,
                      self.spinBox_11.setValue,
@@ -481,13 +484,13 @@ class MainWindow(QMainWindow):
         for i in range(len(state)):
             func_list[i](state[i])
         self.last_state = state
-        self.logger.debug('State restored from index %s', len(self.saved_states))
+        self.logger.debug('State has been restored from %s', state_id)
         return state
 
     def onQuit(self):
         # Save global settings
-        save_settings(self, file_name=CONFIG_FILE)
         self.timer.stop()
+        save_settings(self, file_name=CONFIG_FILE)
 
     def timer_handler(self):
         t0 = time.time()
@@ -520,7 +523,7 @@ class MainWindow(QMainWindow):
                             raise
                         except:
                             pass
-                    self.restore_state()
+                    self.set_state()
                     self.restore = False
             # remained
             try:
