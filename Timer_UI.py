@@ -62,9 +62,6 @@ class MainWindow(QMainWindow):
         self.resize(QSize(480, 640))  # size
         self.move(QPoint(50, 50))  # position
         self.setWindowTitle(APPLICATION_NAME)  # title
-        # self.setWindowIcon(QtGui.QIcon('icon.png'))  # icon
-        # Welcome message
-        print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
         # restore settings
         restore_settings(self, file_name=CONFIG_FILE)
         # Widgets definition
@@ -140,17 +137,18 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_start', self.spinBox_34),  # adc start
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),  # adc stop
         ]
-        # more individual widgets
         # timer on led
         self.timer_on_led = Timer_on_LED('binp/nbi/timing/pulse_start0',
                                          self.pushButton_29)
         self.timer_device = self.timer_on_led.attribute.device_proxy
         # interlock widgets
-        # self.anode_power_led = TangoLED('sys/test/1/boolean_scalar', self.pushButton_33)
         self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok',
                                         self.pushButton_33)
+        # lauda
         self.lauda = Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30)
+        # RF system
         self.rf = RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32)  # RF system ready
+        # PG offset
         self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31)  # PG offset on
         # elapsed widget
         self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
@@ -170,19 +168,14 @@ class MainWindow(QMainWindow):
         self.comboBox.currentIndexChanged.connect(self.single_periodical_callback)
         # run button
         self.pushButton.clicked.connect(self.run_button_clicked)
-        # show more button
-        # self.pushButton_3.clicked.connect(self.show_more_button_clicked)
         # execute button
         self.pushButton_2.clicked.connect(self.execute_button_clicked)
-        #
-        # self.pushButton_4.clicked.connect(self.show_hide_interlocks)
         # show more/less protection buttons
         self.pushButton_5.clicked.connect(self.show_more_protection_button_clicked)
         self.pushButton_8.clicked.connect(self.show_less_protection_button_clicked)
         # prevent non tango leds from changing color when clicked
         self.pushButton_34.mouseReleaseEvent = self.absorb_event
         self.pushButton_29.mouseReleaseEvent = self.absorb_event
-        # self.show_hide_interlocks()
         # ************
         # Defile callback task and start timer
         self.timer = QTimer()
@@ -193,6 +186,25 @@ class MainWindow(QMainWindow):
         self.resize_main_window()
         # ************
         # populate comboBox_2 - scripts for timer
+        self.populate_scripts()
+        # ************
+        # lock timer for exclusive use of this app
+        # self.lock_timer()
+        # Welcome message
+        print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
+
+    def lock_timer(self):
+        if self.timer_device is not None:
+            if self.timer_device.is_locked():
+                self.logger.warning('Timer device is already locked')
+                self.pushButton.setEnabled(False)
+                self.comboBox.setEnabled(False)
+            else:
+                if self.timer_device.lock(100000):
+                    self.logger.debug('Timer device locked successfully')
+                else:
+                    self.logger.error('Can not lock timer device')
+    def populate_scripts(self):
         scripts = read_folder('scripts')
         truncated = [s.replace('.py', '') for s in scripts]
         for i in range(self.comboBox_2.count()):
@@ -200,19 +212,6 @@ class MainWindow(QMainWindow):
         self.comboBox_2.insertItems(0, truncated)
         if 'SetDefault' in truncated:
             self.comboBox_2.setCurrentIndex(truncated.index('SetDefault'))
-        # ************
-        # lock timer for exclusive use of this app
-        # if self.timer_device is not None:
-        #     if self.timer_device.is_locked():
-        #         self.logger.warning('Timer device is already locked')
-        #         self.pushButton.setEnabled(False)
-        #         self.comboBox.setEnabled(False)
-        #     else:
-        #         if self.timer_device.lock(100000):
-        #             self.logger.debug('Timer device locked successfully')
-        #         else:
-        #             self.logger.error('Can not lock timer device')
-        self.logger.info('\n\n------------ Attribute Config Finished -----------\n')
 
     def absorb_event(self, ev):
         pass
