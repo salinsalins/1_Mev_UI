@@ -204,6 +204,7 @@ class MainWindow(QMainWindow):
                     self.logger.debug('Timer device locked successfully')
                 else:
                     self.logger.error('Can not lock timer device')
+
     def populate_scripts(self):
         scripts = read_folder('scripts')
         truncated = [s.replace('.py', '') for s in scripts]
@@ -236,23 +237,22 @@ class MainWindow(QMainWindow):
         return True
 
     def execute_button_clicked(self):
+        file_name = ''
         try:
             file_name = os.path.join('scripts', self.comboBox_2.currentText() + '.py')
             with open(file_name, 'r') as scriptfile:
                 s = scriptfile.read()
-                result = exec(s)
+                exec(s)
                 self.logger.debug('Script %s executed', file_name)
                 self.comboBox_2.setStyleSheet('')
         except KeyboardInterrupt:
             raise
         except:
             self.comboBox_2.setStyleSheet('color: red')
-            self.logger.warning('Error action execution')
-            self.logger.debug('', exc_info=True)
+            log_exception('Error script %s execution', file_name)
 
     def resize_main_window(self):
         self.frame.setVisible(True)
-        # self.resize(QSize(418, 751))
         self.resize(QSize(self.gridLayout_2.sizeHint().width(),
                           self.gridLayout_2.sizeHint().height() +
                           self.gridLayout_3.sizeHint().height()))
