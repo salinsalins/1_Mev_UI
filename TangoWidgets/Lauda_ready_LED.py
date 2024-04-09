@@ -38,7 +38,7 @@ class Lauda_ready_LED(TangoLED):
     def decorate(self):
         self.set_widget_value()
 
-    def set_widget_value(self):
+    def set_widget_value(self, value=None):
         try:
             if self.valve.is_valid() and self.motor.is_valid() and self.value:
                 self.widget.setChecked(True)

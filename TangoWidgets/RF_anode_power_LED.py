@@ -18,7 +18,7 @@ class RF_anode_power_LED(TangoLED):
     def decorate(self):
         self.set_widget_value()
 
-    def set_widget_value(self):
+    def set_widget_value(self, value=None):
         try:
             if not (self.st.value != tango.DevState.RUNNING or self.ap.value > 50.0):
                 self.widget.setChecked(False)
