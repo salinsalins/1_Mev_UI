@@ -69,74 +69,66 @@ class MainWindow(QMainWindow):
         self.config['timer_device_name'] = self.timer_device_name
         # Widgets definition
         self.enable_widgets = [
-            TangoCheckBox(self.timer_device_name + '/channel_enable1', self.checkBox_8),  # ch0           2
-            TangoCheckBox(self.timer_device_name + '/channel_enable2', self.checkBox_9),  # ch1           3
-            TangoCheckBox(self.timer_device_name + '/channel_enable3', self.checkBox_10),  # ch2          4
-            TangoCheckBox(self.timer_device_name + '/channel_enable4', self.checkBox_11),  # ch3          5
-            TangoCheckBox(self.timer_device_name + '/channel_enable5', self.checkBox_12),  # ch4
-            TangoCheckBox(self.timer_device_name + '/channel_enable6', self.checkBox_13),  # ch5
-            TangoCheckBox(self.timer_device_name + '/channel_enable7', self.checkBox_14),  # ch6
-            TangoCheckBox(self.timer_device_name + '/channel_enable8', self.checkBox_15),  # ch7
-            TangoCheckBox(self.timer_device_name + '/channel_enable9', self.checkBox_16),  # ch8
-            TangoCheckBox(self.timer_device_name + '/channel_enable10', self.checkBox_17),  # ch9
-            TangoCheckBox(self.timer_device_name + '/channel_enable11', self.checkBox_18),  # ch10
-            # TangoCheckBox(self.timer_device_name + '/channel_enable12', self.checkBox_19),  # ch11        13
+            TangoCheckBox(self.timer_device_name + '/channel_enable0', self.checkBox_8),  # ch0           2
+            TangoCheckBox(self.timer_device_name + '/channel_enable1', self.checkBox_9),  # ch1           3
+            TangoCheckBox(self.timer_device_name + '/channel_enable2', self.checkBox_10),  # ch2          4
+            TangoCheckBox(self.timer_device_name + '/channel_enable3', self.checkBox_11),  # ch3          5
+            TangoCheckBox(self.timer_device_name + '/channel_enable4', self.checkBox_12),  # ch4
+            TangoCheckBox(self.timer_device_name + '/channel_enable5', self.checkBox_13),  # ch5
+            TangoCheckBox(self.timer_device_name + '/channel_enable6', self.checkBox_14),  # ch6
+            TangoCheckBox(self.timer_device_name + '/channel_enable7', self.checkBox_15),  # ch7
+            TangoCheckBox(self.timer_device_name + '/channel_enable8', self.checkBox_16),  # ch8
+            TangoCheckBox(self.timer_device_name + '/channel_enable9', self.checkBox_17),  # ch9
+            TangoCheckBox(self.timer_device_name + '/channel_enable10', self.checkBox_18),  # ch10
+            # TangoCheckBox(self.timer_device_name + '/channel_enable11', self.checkBox_19),  # ch11        13
         ]
         self.restore = False
         self.stop_widgets = [
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop1', self.spinBox_11),  # ch0        26
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop2', self.spinBox_13),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop3', self.spinBox_15),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop4', self.spinBox_17),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop5', self.spinBox_19),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop6', self.spinBox_21),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop7', self.spinBox_23),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop8', self.spinBox_25),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop9', self.spinBox_27),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop10', self.spinBox_29),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop11', self.spinBox_31),  # ch
-            # TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop12', self.spinBox_33),  # ch11      37
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop0', self.spinBox_11),  # ch0        26
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop1', self.spinBox_13),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop2', self.spinBox_15),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop3', self.spinBox_17),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop4', self.spinBox_19),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop5', self.spinBox_21),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop6', self.spinBox_23),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop7', self.spinBox_25),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop8', self.spinBox_27),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop9', self.spinBox_29),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop10', self.spinBox_31),  # ch
+            # TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop11', self.spinBox_33),  # ch11      37
         ]
         self.rdwdgts = [
             # timer labels from enabled channels
-            TangoLabel(self.timer_device_name + '/channel_enable1', self.label_30, prop='label'),  # ch0
-            TangoLabel(self.timer_device_name + '/channel_enable3', self.label_31, prop='label'),  # ch1
-            TangoLabel(self.timer_device_name + '/channel_enable3', self.label_34, prop='label'),  # ch2
-            TangoLabel(self.timer_device_name + '/channel_enable4', self.label_35, prop='label'),  # ch3
-            TangoLabel(self.timer_device_name + '/channel_enable5', self.label_36, prop='label'),  # ch4
-            TangoLabel(self.timer_device_name + '/channel_enable6', self.label_38, prop='label'),  # ch
-            TangoLabel(self.timer_device_name + '/channel_enable7', self.label_39, prop='label'),  # ch
-            TangoLabel(self.timer_device_name + '/channel_enable8', self.label_40, prop='label'),  # ch
-            TangoLabel(self.timer_device_name + '/channel_enable9', self.label_41, prop='label'),  # ch
-            TangoLabel(self.timer_device_name + '/channel_enable10', self.label_42, prop='label'),  # ch
-            TangoLabel(self.timer_device_name + '/channel_enable11', self.label_43, prop='label'),  # ch
-            # TangoLabel(self.timer_device_name + '/channel_enable12', self.label_44, prop='label'),  # ch11
-            # pg
-            # TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31),  # PG offset on
-            # # lauda
-            # # TangoLED('binp/nbi/laudapy/6230_7', self.pushButton_30),  # Pump On
-            # # TangoLED('binp/nbi/laudapy/6230_0', self.pushButton_30),  # Valve
-            # Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30),
-            # rf system
-            # RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32),  # RF system ready
+            TangoLabel(self.timer_device_name + '/channel_enable0', self.label_30, prop='label'),  # ch0
+            TangoLabel(self.timer_device_name + '/channel_enable1', self.label_31, prop='label'),  # ch1
+            TangoLabel(self.timer_device_name + '/channel_enable2', self.label_34, prop='label'),  # ch2
+            TangoLabel(self.timer_device_name + '/channel_enable3', self.label_35, prop='label'),  # ch3
+            TangoLabel(self.timer_device_name + '/channel_enable4', self.label_36, prop='label'),  # ch4
+            TangoLabel(self.timer_device_name + '/channel_enable5', self.label_38, prop='label'),  # ch
+            TangoLabel(self.timer_device_name + '/channel_enable6', self.label_39, prop='label'),  # ch
+            TangoLabel(self.timer_device_name + '/channel_enable7', self.label_40, prop='label'),  # ch
+            TangoLabel(self.timer_device_name + '/channel_enable8', self.label_41, prop='label'),  # ch
+            TangoLabel(self.timer_device_name + '/channel_enable9', self.label_42, prop='label'),  # ch
+            TangoLabel(self.timer_device_name + '/channel_enable10', self.label_43, prop='label'),  # ch
+            # TangoLabel(self.timer_device_name + '/channel_enable11', self.label_44, prop='label'),  # ch11
         ]
         # read/write attributes TangoWidgets list
         self.wtwdgts = [
             # timer
             TangoAbstractSpinBox(self.timer_device_name + '/Period', self.spinBox),  # period             0
             TangoComboBox(self.timer_device_name + '/Start_mode', self.comboBox),  # single/periodical    1
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start1', self.spinBox_10),  # ch1       14
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start2', self.spinBox_12),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start3', self.spinBox_14),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start4', self.spinBox_16),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start5', self.spinBox_18),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start6', self.spinBox_20),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start7', self.spinBox_22),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start8', self.spinBox_24),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start9', self.spinBox_26),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start10', self.spinBox_28),  # ch
-            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start11', self.spinBox_30),  # ch
-            # TangoAbstractSpinBox(self.timer_device_name + '/pulse_start12', self.spinBox_32),  # ch11     25
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start0', self.spinBox_10),  # ch1       14
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start1', self.spinBox_12),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start2', self.spinBox_14),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start3', self.spinBox_16),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start4', self.spinBox_18),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start5', self.spinBox_20),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start6', self.spinBox_22),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start7', self.spinBox_24),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start8', self.spinBox_26),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start9', self.spinBox_28),  # ch
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start10', self.spinBox_30),  # ch
+            # TangoAbstractSpinBox(self.timer_device_name + '/pulse_start11', self.spinBox_32),  # ch11     25
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_start', self.spinBox_34),  # adc start
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),  # adc stop
         ]
@@ -158,8 +150,8 @@ class MainWindow(QMainWindow):
         # combine all processed widgets
         self.widgets = (self.rdwdgts + self.wtwdgts +
                         self.enable_widgets + self.stop_widgets +
-                        [self.lauda, self.rf, self.pg,
-                         self.anode_power_led, self.elapsed_widget])
+                        # [self.lauda, self.rf, self.pg, self.anode_power_led] +
+                        [self.elapsed_widget])
         self.max_time = 0.0
         # *******************************
         # additional decorations
@@ -547,7 +539,6 @@ class MainWindow(QMainWindow):
                 count += 1
                 if count == len(self.widgets):
                     break
-            self.update_ready_led()
             self.elapsed = time.time() - t0
         except KeyboardInterrupt:
             raise
