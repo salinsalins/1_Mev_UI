@@ -9,7 +9,7 @@ import sys
 import time
 
 import tango
-from tango import DevFailed, DevLong
+from tango import DevFailed, DevLong, AttributeInfoListEx, AttributeInfoEx, DevLong64
 
 from TangoUtils import split_attribute_name
 from config_logger import config_logger
@@ -322,7 +322,7 @@ class TangoAttribute:
 
     def write_sync(self, value):
         v = value
-        if self.read_result.type == DevLong:
+        if self.read_result.type == DevLong or self.read_result.type == DevLong64 :
             v = int(value)
         self.device_proxy.write_attribute(self.attribute_name, v)
 

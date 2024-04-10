@@ -24,7 +24,10 @@ class TangoLabel(TangoWidget):
     def read_property(self):
         if self.database is None:
             self.database = tango.Database()
-        self.property_value = self.database.get_device_attribute_property(self.attribute.device_name, self.attribute.attribute_name)[self.attribute.attribute_name][self.property][0]
+        try:
+            self.property_value = self.database.get_device_attribute_property(self.attribute.device_name, self.attribute.attribute_name)[self.attribute.attribute_name][self.property][0]
+        except:
+            self.property_value = 'No_label'
 
     def read(self, force=None, sync=None):
         if self.property is None:
