@@ -9,14 +9,11 @@ import sys
 import time
 
 import tango
-from tango import DevFailed, DevLong, AttributeInfoListEx, AttributeInfoEx, DevLong64
+from tango import DevFailed, DevLong, DevLong64, DevULong, DevULong64, AttributeConfig
 
 from TangoUtils import split_attribute_name
 from config_logger import config_logger
 from log_exception import log_exception
-
-
-# from .Utils import *
 
 
 class TangoAttributeConnectionFailed(tango.ConnectionFailed):
@@ -36,22 +33,22 @@ class TangoAttribute:
         self.device_proxy = None
         self.connected = False
         self.reconnect_timeout = 5.0
-        self.read_result = None
-        self.config = None
+        self.read_result = tango.DeviceAttribute()
+        self.config = tango.AttributeInfoEx()
         self.format = '%s'
         self.coeff = 1.0
         self.readonly = readonly
-        self.force_read = False
         self.use_history = use_history
         self.history_valid_time = kwargs.get('history_valid_time', 0.3)
-        self.attribute_polled = False
+        self.attribute_polled = kwargs.get('attribute_polled', False)
         # async operation vars
-        self.sync_read = False
-        self.sync_write = True
+        self.force_read = kwargs.get('force_read', False)
+        self.sync_read = kwargs.get('sync_read', False)
+        self.sync_write = kwargs.get('sync_write', True)
+        self.read_timeout = kwargs.get('read_timeout', 3.5)
+        self.write_timeout = kwargs.get('write_timeout', 3.5)
         self.read_call_id = None
         self.write_call_id = None
-        self.read_timeout = 3.5
-        self.write_timeout = 3.5
         self.read_time = 0.0
         self.write_time = 0.0
         # connect attribute
@@ -71,29 +68,9 @@ class TangoAttribute:
                 self.connected = True
                 self.logger.debug('%s has been connected for device only' % self.full_name)
                 return True
-            self.config = self.device_proxy.get_attribute_config_ex(self.attribute_name)[0]
-            self.format = self.config.format
-            try:
-                self.coeff = float(self.config.display_unit)
-            except KeyboardInterrupt:
-                raise
-            except:
-                self.coeff = 1.0
-            self.readonly = self.readonly or self.is_readonly()
-            self.attribute_polled = self.device_proxy.is_attribute_polled(self.attribute_name)
-            # t0 = time.time()
-            # try:
-            #     self.read_async()
-            # while self.read_call_id is not None and time.time() - t0 < 0.1:
-            #     self.read_async()
-            # if self.read_call_id is not None:
-            #     self.read_result = DeviceAttribute()
-            #     self.read_result.value = None
-            # self.read_result = self.device_proxy.read_attribute(self.attribute_name)
-            # self.read_result = DeviceAttribute()
-            # self.read_result.value = None
-            # self.read_async()
+            self.set_config()
             self.connected = True
+            self.read()
             self.logger.debug('Attribute %s has been connected' % self.full_name)
             return True
         except KeyboardInterrupt:
@@ -167,12 +144,13 @@ class TangoAttribute:
         self.attribute_polled = self.device_proxy.is_attribute_polled(self.attribute_name)
 
     def is_readonly(self):
-        try:
-            return self.config.writable == tango.AttrWriteType.READ
-        except KeyboardInterrupt:
-            raise
-        except:
-            return True
+        return self.config.writable == tango.AttrWriteType.READ
+        # try:
+        #     return self.config.writable == tango.AttrWriteType.READ
+        # except KeyboardInterrupt:
+        #     raise
+        # except:
+        #     return True
 
     def is_valid(self):
         try:
@@ -183,20 +161,22 @@ class TangoAttribute:
             return False
 
     def is_boolean(self):
-        try:
-            return self.connected and isinstance(self.read_result.value, bool)
-        except KeyboardInterrupt:
-            raise
-        except:
-            return False
+        return self.config.data_type == tango.DevBoolean
+        # try:
+        #     return self.connected and isinstance(self.read_result.value, bool)
+        # except KeyboardInterrupt:
+        #     raise
+        # except:
+        #     return False
 
     def is_scalar(self):
-        try:
-            return self.connected and self.config.data_format == tango.AttrDataFormat.SCALAR
-        except KeyboardInterrupt:
-            raise
-        except:
-            return False
+        return self.config.data_format == tango.AttrDataFormat.SCALAR
+        # try:
+        #     return self.connected and self.config.data_format == tango.AttrDataFormat.SCALAR
+        # except KeyboardInterrupt:
+        #     raise
+        # except:
+        #     return False
 
     def test_connection(self):
         if not self.connected:
@@ -246,6 +226,7 @@ class TangoAttribute:
         if read_call_id is None:
             return
         try:
+            # self.device_proxy.cancel_all_polling_asynch_request()
             self.device_proxy.cancel_asynch_request(read_call_id)
         except KeyboardInterrupt:
             raise
@@ -260,7 +241,8 @@ class TangoAttribute:
             try:
                 self.read_result = self.device_proxy.read_attribute_reply(self.read_call_id)
                 self.read_call_id = None
-                return
+                self.read_time = time.time()
+                # return
             except KeyboardInterrupt:
                 raise
             except tango.AsynReplyNotArrived:
@@ -270,8 +252,10 @@ class TangoAttribute:
             t = at.time.totime()
             if t > self.read_result.time.totime() and t >= (time.time() - self.history_valid_time):
                 self.read_result = at
+                self.read_time = time.time()
         else:
             self.read_result = self.device_proxy.read_attribute(self.attribute_name)
+            self.read_time = time.time()
 
     def read_async(self):
         if self.read_call_id is not None:
@@ -295,6 +279,7 @@ class TangoAttribute:
                 self.write_sync(wvalue)
             else:
                 self.write_async(wvalue)
+            # self.read(force=True)
         except tango.AsynReplyNotArrived:
             if time.time() - self.write_time > self.write_timeout:
                 msg = 'Timeout writing %s' % self.full_name
@@ -322,7 +307,7 @@ class TangoAttribute:
 
     def write_sync(self, value):
         v = value
-        if self.read_result.type == DevLong or self.read_result.type == DevLong64 :
+        if self.read_result.type == DevLong or self.read_result.type == DevLong64:
             v = int(value)
         self.device_proxy.write_attribute(self.attribute_name, v)
 

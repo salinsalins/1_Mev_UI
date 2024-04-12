@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         self.spinBox_4.valueChanged.connect(self.setpoint_valueChanged)
         # lauda device
         try:
-            self.lauda = TangoAttribute.devices.values[0]
+            self.lauda = self.pushButton_3.tango_widget.attribute.device_proxy
         except:
             self.lauda = None
         # Defile and start timer callback task

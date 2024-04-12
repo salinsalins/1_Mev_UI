@@ -25,13 +25,13 @@ class TangoWidget:
         # configure logging
         self.logger = config_logger(level=level)
         #
-        self.decorate_only = kwargs.get('decorate_only', False)
+        self.decorate_only = kwargs.pop('decorate_only', False)
         self.update_dt = 0.0
         # widget
         self.widget = widget
         self.widget.tango_widget = self
         # create attribute proxy
-        self.attribute = TangoAttribute(name, level=level, readonly=readonly)
+        self.attribute = TangoAttribute(name, level=level, readonly=readonly, **kwargs)
         # first update
         self.update(decorate_only=False)
 
@@ -46,7 +46,6 @@ class TangoWidget:
         if hasattr(self.widget, 'setText') and text is not None:
             self.widget.setText(text)
         self.widget.setStyleSheet('color: red')
-        # self.logger.debug('%s decorated invalid' % self.name)
 
     def decorate_invalid_data_format(self, text: str = None, *args, **kwargs):
         self.decorate_invalid(text, *args, **kwargs)
@@ -64,7 +63,8 @@ class TangoWidget:
         return self.attribute.read(force, sync)
 
     def write(self, value):
-        return self.attribute.write(value)
+        self.attribute.write(value)
+        # self.update(False)
 
     # compare widget displayed value and read attribute value
     def compare(self):
@@ -153,7 +153,8 @@ class TangoWidget:
             return
         try:
             self.write(value)
-            self.read(True)
+            self.read(force=True)
+            # self.set_widget_value()
             self.decorate()
         except KeyboardInterrupt:
             raise

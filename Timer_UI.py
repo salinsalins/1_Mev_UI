@@ -333,7 +333,7 @@ class MainWindow(QMainWindow):
 
     def run_button_clicked(self, value):
         if self.comboBox.currentIndex() == 0:  # single
-            if self.timer_on_led.value:  # pulse is on
+            if self.is_pulse_on():  # pulse is on
                 self.pulse_off('Interrupted by user.')
             else:
                 # check protection interlock
@@ -491,48 +491,37 @@ class MainWindow(QMainWindow):
         self.timer.stop()
         save_settings(self, file_name=CONFIG_FILE)
 
+    def is_pulse_on(self):
+        return self.timer_on_led.value
+
+    def update_remained(self):
+        try:
+            self.remained = self.spinBox.value() - int(self.label_3.text())
+        except KeyboardInterrupt:
+            raise
+        except:
+            self.remained = -1
+        self.label_5.setText('%d s' % self.remained)
+
     def timer_handler(self):
         t0 = time.time()
         try:
-            self.save_state()
+            # if empty update list
             if len(self.widgets) <= 0:
                 return
-            # during pulse
-            # if self.timer_on_led.value:   # pulse is on
+            #
             self.update_ready_led()
             self.elapsed_widget.update()
-            v = self.elapsed_widget.attribute.valid_value()
-            if isinstance(v, float) and v < self.max_time:
-                # pulse is ON LED -> ON
+            self.update_remained()
+            #
+            if self.is_pulse_on():
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')
-                self.timer_on_led.set_widget_value(1.0)
             else:
-                # pulse is OFF LED -> OFF
                 self.pushButton.setStyleSheet('')
-                self.timer_on_led.set_widget_value(0.0)
                 if self.comboBox.currentIndex() == 0:
                     self.pushButton.setText('Shoot')
-                if self.restore:
-                    for w in self.enable_widgets:
-                        try:
-                            self.timer_device.write_attribute(w.attribute.attribute_name,
-                                                              w.last_state)
-                        except KeyboardInterrupt:
-                            raise
-                        except:
-                            pass
-                    self.set_state()
-                    self.restore = False
-            # remained
-            try:
-                self.remained = self.spinBox.value() - int(self.label_3.text())
-            except KeyboardInterrupt:
-                raise
-            except:
-                self.remained = -1
-            self.label_5.setText('%d s' % self.remained)
-            # main loop updating widgets
+            # updating widgets
             count = 0
             while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.8:
                 if self.n < len(self.widgets) and self.widgets[self.n].widget.isVisible():
@@ -543,7 +532,6 @@ class MainWindow(QMainWindow):
                 count += 1
                 if count == len(self.widgets):
                     break
-            self.update_ready_led()
             self.elapsed = time.time() - t0
         except KeyboardInterrupt:
             raise

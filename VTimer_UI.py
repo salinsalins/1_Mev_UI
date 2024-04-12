@@ -35,7 +35,7 @@ from TangoWidgets.Utils import *
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
 APPLICATION_NAME_SHORT = APPLICATION_NAME
-APPLICATION_VERSION = '0.1'
+APPLICATION_VERSION = '1.0'
 CONFIG_FILE = APPLICATION_NAME_SHORT + '.json'
 UI_FILE = APPLICATION_NAME_SHORT + '.ui'
 
@@ -80,9 +80,8 @@ class MainWindow(QMainWindow):
             TangoCheckBox(self.timer_device_name + '/channel_enable8', self.checkBox_16),  # ch8
             TangoCheckBox(self.timer_device_name + '/channel_enable9', self.checkBox_17),  # ch9
             TangoCheckBox(self.timer_device_name + '/channel_enable10', self.checkBox_18),  # ch10
-            # TangoCheckBox(self.timer_device_name + '/channel_enable11', self.checkBox_19),  # ch11        13
+            TangoCheckBox(self.timer_device_name + '/channel_enable11', self.checkBox_19),  # ch11        13
         ]
-        self.restore = False
         self.stop_widgets = [
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop0', self.spinBox_11),  # ch0        26
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop1', self.spinBox_13),  # ch
@@ -95,7 +94,7 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop8', self.spinBox_27),  # ch
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop9', self.spinBox_29),  # ch
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop10', self.spinBox_31),  # ch
-            # TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop11', self.spinBox_33),  # ch11      37
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop11', self.spinBox_33),  # ch11      37
         ]
         self.rdwdgts = [
             # timer labels from enabled channels
@@ -110,7 +109,7 @@ class MainWindow(QMainWindow):
             TangoLabel(self.timer_device_name + '/channel_enable8', self.label_41, prop='label'),  # ch
             TangoLabel(self.timer_device_name + '/channel_enable9', self.label_42, prop='label'),  # ch
             TangoLabel(self.timer_device_name + '/channel_enable10', self.label_43, prop='label'),  # ch
-            # TangoLabel(self.timer_device_name + '/channel_enable11', self.label_44, prop='label'),  # ch11
+            TangoLabel(self.timer_device_name + '/channel_enable11', self.label_44, prop='label'),  # ch11
         ]
         # read/write attributes TangoWidgets list
         self.wtwdgts = [
@@ -128,23 +127,29 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_start8', self.spinBox_26),  # ch
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_start9', self.spinBox_28),  # ch
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_start10', self.spinBox_30),  # ch
-            # TangoAbstractSpinBox(self.timer_device_name + '/pulse_start11', self.spinBox_32),  # ch11     25
+            TangoAbstractSpinBox(self.timer_device_name + '/pulse_start11', self.spinBox_32),  # ch11     25
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_start', self.spinBox_34),  # adc start
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),  # adc stop
         ]
         # timer on led
         self.timer_on_led = TangoLED(self.timer_device_name + '/pulse',
                                      self.pushButton_29)
+        self.timer_on_led.attribute.force_read = True
+        self.timer_on_led.attribute.sync_read = True
+        #
         self.timer_device = self.timer_on_led.attribute.device_proxy
         # interlock widgets
         self.anode_power_led = TangoLED('binp/nbi/rfpowercontrol/anode_power_ok',
                                         self.pushButton_33)
+        self.anode_power_led.attribute.sync_read = True
         # lauda
         self.lauda = Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30)
+        self.lauda.attribute.sync_read = True
         # RF system
         self.rf = RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32)  # RF system ready
+        self.rf.attribute.sync_read = True
         # PG offset
-        self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31)  # PG offset on
+        self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31, sync_read=True)
         # elapsed widget
         self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
         # combine all processed widgets
@@ -318,17 +323,16 @@ class MainWindow(QMainWindow):
         self.stackedWidget_2.setCurrentIndex(1)
 
     def update_ready_led(self):
-        # if self.pushButton_34.isVisible():
         if self.check_protection_interlock():
             self.pushButton_34.setChecked(True)
         else:
             self.pushButton_34.setChecked(False)
-            if self.timer_on_led.widget.isEnabled():
+            if self.is_pulse_on():
                 self.pulse_off('Protection interlock')
 
     def run_button_clicked(self, value):
         if self.comboBox.currentIndex() == 0:  # single
-            if self.timer_on_led.get_widget_value():  # pulse is on
+            if self.is_pulse_on():  # pulse is on
                 self.pulse_off('Interrupted by user.')
             else:
                 # check protection interlock
@@ -338,17 +342,11 @@ class MainWindow(QMainWindow):
                     QMessageBox.critical(self, 'Interlock',
                                          'Shot has been rejected', QMessageBox.Ok)
                     return
-                self.max_time = self.read_max_time() / 1000.0
                 self.timer_device.write_attribute('run', 3)
                 self.timer_device.write_attribute('run', 0)
                 self.timer_device.write_attribute('run', 1)
-            for w in self.enable_widgets:
-                if w.get_widget_value():
-                    return
-            # QMessageBox.critical(self, 'No active channels',
-            # 'No active channels', QMessageBox.Ok)
         elif self.comboBox.currentIndex() == 1:  # periodical
-            if self.timer_on_led.get_widget_value():  # pulse is on
+            if self.is_pulse_on():  # pulse is on
                 self.pulse_off('Interrupted by user!')
             self.comboBox.setCurrentIndex(0)
 
@@ -371,7 +369,7 @@ class MainWindow(QMainWindow):
             self.timer_on_led.update(False)
             return
         QMessageBox.critical(self, 'Can not stop pulse!',
-        'Can not stop pulse!', QMessageBox.Ok)
+                             'Can not stop pulse!', QMessageBox.Ok)
         self.logger.error("Can not stop pulse")
         self.logger.debug("Last Exception ", exc_info=True)
         self.restore = False
@@ -487,50 +485,46 @@ class MainWindow(QMainWindow):
         self.timer.stop()
         save_settings(self, file_name=CONFIG_FILE)
 
+    def is_pulse_on(self):
+        return self.timer_on_led.get_widget_value()
+
+    def update_timer_on_led(self):
+        self.timer_on_led.update(decorate_only=False)
+
+    def update_remained(self):
+        try:
+            self.remained = self.spinBox.value() - int(self.label_3.text())
+        except KeyboardInterrupt:
+            raise
+        except:
+            self.remained = -1
+        self.label_5.setText('%d s' % self.remained)
+
     def timer_handler(self):
+        # self.logger.debug("*** entry")
         t0 = time.time()
         try:
             # self.save_state()
             if len(self.widgets) <= 0:
                 return
-            # during pulse
-            # if self.timer_on_led.value:   # pulse is on
+            #
+            self.update_timer_on_led()
             self.update_ready_led()
             self.elapsed_widget.update()
-            v = self.elapsed_widget.attribute.valid_value()
-            if isinstance(v, float) and v < self.max_time:
+            if self.is_pulse_on():
                 # pulse is ON LED -> ON
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')
-                self.timer_on_led.set_widget_value(1.0)
             else:
                 # pulse is OFF LED -> OFF
                 self.pushButton.setStyleSheet('')
-                self.timer_on_led.set_widget_value(0.0)
                 if self.comboBox.currentIndex() == 0:
                     self.pushButton.setText('Shoot')
-                if self.restore:
-                    for w in self.enable_widgets:
-                        try:
-                            self.timer_device.write_attribute(w.attribute.attribute_name,
-                                                              w.last_state)
-                        except KeyboardInterrupt:
-                            raise
-                        except:
-                            pass
-                    self.set_state()
-                    self.restore = False
-            # remained
-            try:
-                self.remained = self.spinBox.value() - int(self.label_3.text())
-            except KeyboardInterrupt:
-                raise
-            except:
-                self.remained = -1
-            self.label_5.setText('%d s' % self.remained)
+            #
+            self.update_remained()
             # main loop updating widgets
             count = 0
-            while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.8:
+            while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.7:
                 if self.n < len(self.widgets) and self.widgets[self.n].widget.isVisible():
                     self.widgets[self.n].update()
                 self.n += 1

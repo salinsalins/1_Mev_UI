@@ -21,7 +21,7 @@ class TangoLED(TangoWidget):
         if value is None:
             value = self.attribute.value()
         self.widget.setChecked(bool(value))
-        return bool(self.attribute.value())
+        return bool(value)
 
     def decorate_error(self, *args, **kwargs):
         self.widget.setDisabled(True)
