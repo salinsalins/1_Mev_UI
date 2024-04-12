@@ -328,7 +328,7 @@ class MainWindow(QMainWindow):
             self.pushButton_34.setChecked(True)
         else:
             self.pushButton_34.setChecked(False)
-            if self.timer_on_led.widget.isEnabled():
+            if self.is_pulse_on():
                 self.pulse_off('Protection interlock')
 
     def run_button_clicked(self, value):
