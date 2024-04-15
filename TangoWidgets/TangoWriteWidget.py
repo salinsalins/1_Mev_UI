@@ -6,7 +6,7 @@ Created on Jan 17, 2020
 """
 
 from PyQt5.QtWidgets import QWidget
-from tango import DevFailed
+from tango import DevFailed, DevSource
 
 from TangoWidgets.TangoAttribute import TangoAttributeConnectionFailed
 from TangoWidgets.TangoWidget import TangoWidget
@@ -15,6 +15,7 @@ from TangoWidgets.TangoWidget import TangoWidget
 class TangoWriteWidget(TangoWidget):
     def __init__(self, name, widget: QWidget, readonly=False):
         super().__init__(name, widget, readonly)
+        self.attribute.device_proxy.set_source(DevSource.DEV)
         try:
             self.attribute.read(force=True, sync=False)
         except (TangoAttributeConnectionFailed, DevFailed):
@@ -34,6 +35,11 @@ class TangoWriteWidget(TangoWidget):
     def decorate_valid(self):
         self.widget.setStyleSheet('')
         self.widget.setEnabled(True)
+
+    # def write(self, value):
+    #     self.attribute.write(value)
+        # self.attribute.read(force=True)
+        # self.set_widget_value()
 
     def update(self, decorate_only=True):
         super().update(decorate_only)

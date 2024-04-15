@@ -22,9 +22,7 @@ class TangoWidget:
 
     def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
         self.name = name
-        # configure logging
-        self.logger = config_logger(level=level)
-        #
+        self.logger = kwargs.get('logger', config_logger(level=level))
         self.decorate_only = kwargs.pop('decorate_only', False)
         self.update_dt = 0.0
         # widget
@@ -60,7 +58,7 @@ class TangoWidget:
         self.widget.setStyleSheet('')
 
     def read(self, force=None, sync=None):
-        return self.attribute.read(force, sync)
+        return self.attribute.read(force=force, sync=sync)
 
     def write(self, value):
         self.attribute.write(value)
@@ -155,6 +153,7 @@ class TangoWidget:
             self.write(value)
             self.read(force=True)
             # self.set_widget_value()
+            # self.logger.debug('***** %s', self.attribute.read_result.value)
             self.decorate()
         except KeyboardInterrupt:
             raise

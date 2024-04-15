@@ -9,7 +9,7 @@ import sys
 import time
 
 import tango
-from tango import DevFailed, DevLong, DevLong64, DevULong, DevULong64, AttributeConfig
+from tango import DevFailed, DevLong, DevLong64, DevULong, DevULong64, AttributeConfig, DevSource
 
 from TangoUtils import split_attribute_name
 from config_logger import config_logger
@@ -253,9 +253,14 @@ class TangoAttribute:
             if t > self.read_result.time.totime() and t >= (time.time() - self.history_valid_time):
                 self.read_result = at
                 self.read_time = time.time()
-        else:
-            self.read_result = self.device_proxy.read_attribute(self.attribute_name)
-            self.read_time = time.time()
+                # self.logger.debug('*** from PB %s %s %s', t, self.read_result.time.totime(), time.time() - self.history_valid_time)
+                return
+        # ds = self.device_proxy.get_source()
+        # self.device_proxy.set_source(DevSource.DEV)
+        self.read_result = self.device_proxy.read_attribute(self.attribute_name)
+        # self.device_proxy.set_source(ds)
+        self.read_time = time.time()
+        # self.logger.debug('*** direct %s %s', self.read_result.time.totime(), time.time() - self.history_valid_time)
 
     def read_async(self):
         if self.read_call_id is not None:
@@ -333,12 +338,6 @@ class TangoAttribute:
         except:
             pass
         return v
-        # try:
-        #     return self.read_result.value
-        # except KeyboardInterrupt:
-        #     raise
-        # except:
-        #     return None
 
     def valid_value(self):
         v = self.value()
