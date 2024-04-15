@@ -33,7 +33,7 @@ class TangoAbstractSpinBox(TangoWriteWidget):
         bs = self.widget.blockSignals(True)
         try:
             if math.isnan(self.attribute.value()):
-                self.widget.setValue(0.0)
+                self.widget.setValue(0)
             else:
                 self.widget.setValue(int(self.attribute.value()))
         except:
