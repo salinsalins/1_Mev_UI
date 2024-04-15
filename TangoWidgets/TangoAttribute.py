@@ -84,43 +84,23 @@ class TangoAttribute:
         if not self.connected:
             return
         self.connected = False
+        self.time = time.time()
         # self.device_proxy = None
         self.logger.debug('Attribute %s has been disconnected', self.full_name)
 
     def reconnect(self):
         if self.connected:
             return True
-        if self.device_name in TangoAttribute.devices and TangoAttribute.devices[
-            self.device_name] is not self.device_proxy:
-            self.logger.debug('Device proxy changed for %s' % self.full_name)
-            self.disconnect()
-            if time.time() - self.time > self.reconnect_timeout:
-                self.connect()
-        if self.connected:
-            return True
         if time.time() - self.time > self.reconnect_timeout:
-            self.logger.debug('Reconnection timeout exceeded for %s' % self.full_name)
+            # self.logger.debug('Reconnection timeout exceeded for %s' % self.full_name)
             self.connect()
         return self.connected
 
     def create_device_proxy(self):
-        if self.device_name in TangoAttribute.devices:
-            try:
-                # check if device is alive
-                pt = TangoAttribute.devices[self.device_name].ping()
-                # self.logger.debug('Device %s for %s exists', self.device_name, self.attribute_name)
-            except KeyboardInterrupt:
-                raise
-            except DevFailed:
-                self.logger.info('Device %s can not be reached', self.device_name)
-            return TangoAttribute.devices[self.device_name]
         try:
             dp = tango.DeviceProxy(self.device_name)
-            TangoAttribute.devices[self.device_name] = dp
             self.logger.info('Device proxy for %s has been created' % self.device_name)
             return dp
-        # except KeyboardInterrupt:
-        #     raise
         except DevFailed:
             log_exception('Device %s creation exception: ' % self.device_name, no_info=True)
             return None
