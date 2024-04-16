@@ -76,7 +76,7 @@ class TangoAttribute:
         except KeyboardInterrupt:
             raise
         except DevFailed:
-            log_exception('Can not connect attribute %s' % self.full_name, no_info=True)
+            log_exception('Can not connect attribute %s' % self.full_name, exc_info=False)
             self.disconnect()
             return False
 
