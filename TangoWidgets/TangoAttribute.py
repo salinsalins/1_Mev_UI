@@ -225,7 +225,8 @@ class TangoAttribute:
                 # return
             except KeyboardInterrupt:
                 raise
-            except tango.AsynReplyNotArrived:
+            except (tango.AsynCall, tango.AsynReplyNotArrived, tango.ConnectionFailed,
+                    tango.CommunicationFailed, tango.DevFailed):
                 self.cancel_asynch_request(self.read_call_id)
         if self.use_history and not force and self.attribute_polled:
             at = self.device_proxy.attribute_history(self.attribute_name, 1)[0]

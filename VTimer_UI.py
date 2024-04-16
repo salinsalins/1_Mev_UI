@@ -7,6 +7,7 @@ Created on Jul 28, 2019
 
 import os.path
 import sys
+import time
 from collections import deque
 
 util_path = os.path.realpath('../TangoUtils')
@@ -56,6 +57,8 @@ class MainWindow(QMainWindow):
         self.n = 0
         self.elapsed = 0.0
         self.remained = 0.0
+        self.loop_time = 0.0
+        self.last_shot_time = 0.0
         # Load the Qt UI
         uic.loadUi(UI_FILE, self)
         # Default main window parameters
@@ -67,6 +70,10 @@ class MainWindow(QMainWindow):
         #
         self.timer_device_name = self.config.get('timer_device_name', 'binp/nbi/timer1')
         self.config['timer_device_name'] = self.timer_device_name
+        self.periodical = self.config.get('periodical', False)
+        self.config['periodical'] = self.periodical
+        self.period = self.config.get('period', 0.0)
+        self.config['period'] = self.period
         # Widgets definition
         self.enable_widgets = [
             TangoCheckBox(self.timer_device_name + '/channel_enable0', self.checkBox_8),  # ch0           2
@@ -96,7 +103,7 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop10', self.spinBox_31),  # ch
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_stop11', self.spinBox_33),  # ch11      37
         ]
-        self.rdwdgts = [
+        self.labels = [
             # timer labels from enabled channels
             TangoLabel(self.timer_device_name + '/channel_enable0', self.label_30, prop='label'),  # ch0
             TangoLabel(self.timer_device_name + '/channel_enable1', self.label_31, prop='label'),  # ch1
@@ -114,8 +121,8 @@ class MainWindow(QMainWindow):
         # read/write attributes TangoWidgets list
         self.wtwdgts = [
             # timer
-            TangoAbstractSpinBox(self.timer_device_name + '/Period', self.spinBox),  # period             0
-            TangoComboBox(self.timer_device_name + '/Start_mode', self.comboBox),  # single/periodical    1
+            # TangoAbstractSpinBox(self.timer_device_name + '/Period', self.spinBox),  # period             0
+            # TangoComboBox(self.timer_device_name + '/Start_mode', self.comboBox),  # single/periodical    1
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_start0', self.spinBox_10),  # ch1       14
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_start1', self.spinBox_12),  # ch
             TangoAbstractSpinBox(self.timer_device_name + '/pulse_start2', self.spinBox_14),  # ch
@@ -132,8 +139,7 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox('binp/nbi/adc0/Acq_stop', self.spinBox_35),  # adc stop
         ]
         # timer on led
-        self.timer_on_led = TangoLED(self.timer_device_name + '/pulse',
-                                     self.pushButton_29)
+        self.timer_on_led = TangoLED(self.timer_device_name + '/pulse', self.pushButton_29)
         self.timer_on_led.attribute.force_read = True
         self.timer_on_led.attribute.sync_read = True
         #
@@ -151,36 +157,31 @@ class MainWindow(QMainWindow):
         # PG offset
         self.pg = TangoLED('binp/nbi/pg_offset/output_state', self.pushButton_31, sync_read=True)
         # elapsed widget
-        self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
+        # self.elapsed_widget = TangoLabel('binp/nbi/adc0/Elapsed', self.label_3)
         # combine all processed widgets
-        self.widgets = (self.rdwdgts + self.wtwdgts +
-                        self.enable_widgets + self.stop_widgets +
+        self.widgets = (self.labels + self.wtwdgts + self.enable_widgets + self.stop_widgets)
+                        # +
                         # [self.lauda, self.rf, self.pg, self.anode_power_led] +
-                        [self.elapsed_widget])
-        self.max_time = 0.0
+                        # [self.elapsed_widget])
+        # self.max_time = 0.0
         # *******************************
         # additional decorations
-        self.single_periodical_callback(self.comboBox.currentIndex())
+        # self.single_periodical_callback(self.comboBox.currentIndex())
         # *******************************
         # Connect signals with slots
         # single/periodical combo
-        self.comboBox.currentIndexChanged.disconnect(self.comboBox.tango_widget.callback)
+        # self.comboBox.currentIndexChanged.disconnect(self.comboBox.tango_widget.callback)
         self.comboBox.currentIndexChanged.connect(self.single_periodical_callback)
         # run button
         self.pushButton.clicked.connect(self.run_button_clicked)
         # execute button
         self.pushButton_2.clicked.connect(self.execute_button_clicked)
         # show more/less protection buttons
-        self.pushButton_5.clicked.connect(self.show_more_protection_button_clicked)
-        self.pushButton_8.clicked.connect(self.show_less_protection_button_clicked)
+        # self.pushButton_5.clicked.connect(self.show_more_protection_button_clicked)
+        # self.pushButton_8.clicked.connect(self.show_less_protection_button_clicked)
         # prevent non tango leds from changing color when clicked
         self.pushButton_34.mouseReleaseEvent = self.absorb_event
         self.pushButton_29.mouseReleaseEvent = self.absorb_event
-        # ************
-        # Defile callback task and start timer
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.timer_handler)
-        self.timer.start(TIMER_PERIOD)
         # ************
         # resize main window
         self.resize_main_window()
@@ -190,6 +191,11 @@ class MainWindow(QMainWindow):
         # ************
         # lock timer for exclusive use of this app
         # self.lock_timer()
+        # ************
+        # Defile callback task and start timer
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timer_handler)
+        self.timer.start(TIMER_PERIOD)
         # Welcome message
         print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
 
@@ -264,10 +270,9 @@ class MainWindow(QMainWindow):
             self.label_5.setVisible(False)
             # run button
             self.pushButton.setText('Shoot')
-            self.comboBox.blockSignals(True)
-            self.comboBox.tango_widget.callback(value)
-            self.comboBox.tango_widget.read(force=True, sync=True)
-            self.comboBox.blockSignals(False)
+            # stop pulse
+            self.timer_device.write_attribute('run', 0)
+            self.periodical = False
         elif value == 1:  # switch to periodical
             # check protection interlock
             if not self.check_protection_interlock():
@@ -281,24 +286,24 @@ class MainWindow(QMainWindow):
                                      'Protection interlock.\nShot has been rejected.',
                                      QMessageBox.Ok)
                 return
-            # check for period expired
-            try:
-                remained = self.spinBox.value() - int(self.label_3.text())
-            except KeyboardInterrupt:
-                raise
-            except:
-                remained = -1
-            if remained > 0:
-                self.logger.error('Period is not expired - Shot has been rejected')
-                self.comboBox.blockSignals(True)
-                self.comboBox.setCurrentIndex(0)
-                self.comboBox.tango_widget.callback(0)
-                self.comboBox.setStyleSheet('border: 3px solid red')
-                self.comboBox.blockSignals(False)
-                QMessageBox.critical(self, 'Period',
-                                     'Period is not expired.\nShot has been rejected.',
-                                     QMessageBox.Ok)
-                return
+            # check if period expired
+            # try:
+            #     remained = self.spinBox.value() - int(self.label_3.text())
+            # except KeyboardInterrupt:
+            #     raise
+            # except:
+            #     remained = -1
+            # if remained > 0:
+            #     self.logger.error('Period is not expired - Shot has been rejected')
+            #     self.comboBox.blockSignals(True)
+            #     self.comboBox.setCurrentIndex(0)
+            #     self.comboBox.tango_widget.callback(0)
+            #     self.comboBox.setStyleSheet('border: 3px solid red')
+            #     self.comboBox.blockSignals(False)
+            #     QMessageBox.critical(self, 'Period',
+            #                          'Period is not expired.\nShot has been rejected.',
+            #                          QMessageBox.Ok)
+            #     return
             # show remained
             self.label_4.setVisible(True)
             self.label_5.setVisible(True)
@@ -492,25 +497,26 @@ class MainWindow(QMainWindow):
         self.timer_on_led.update(decorate_only=False)
 
     def update_remained(self):
-        try:
-            self.remained = self.spinBox.value() - int(self.label_3.text())
-        except KeyboardInterrupt:
-            raise
-        except:
-            self.remained = -1
+        self.remained = self.last_shot_time + self.period - time.time()
         self.label_5.setText('%d s' % self.remained)
+
+    def update_elapsed(self):
+        self.elapsed = self.last_shot_time - time.time()
+        self.label_3.setText('%d s' % self.elapsed)
 
     def timer_handler(self):
         # self.logger.debug("*** entry")
         t0 = time.time()
         try:
-            # self.save_state()
-            if len(self.widgets) <= 0:
-                return
-            #
+            # periodical shooting
+            if self.periodical:
+                if time.time() - self.last_shot_time < self.period:
+                    self.timer_device.command_inout('start_pulse')
+                    self.last_shot_time = time.time()
             self.update_timer_on_led()
             self.update_ready_led()
-            self.elapsed_widget.update()
+            self.update_elapsed()
+            self.update_remained()
             if self.is_pulse_on():
                 # pulse is ON LED -> ON
                 self.pushButton.setStyleSheet('color: red; font: bold')
@@ -521,7 +527,6 @@ class MainWindow(QMainWindow):
                 if self.comboBox.currentIndex() == 0:
                     self.pushButton.setText('Shoot')
             #
-            self.update_remained()
             # main loop updating widgets
             count = 0
             while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.7:
@@ -533,7 +538,7 @@ class MainWindow(QMainWindow):
                 count += 1
                 if count == len(self.widgets):
                     break
-            self.elapsed = time.time() - t0
+            self.loop_time = time.time() - t0
         except KeyboardInterrupt:
             raise
         except:
