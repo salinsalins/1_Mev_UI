@@ -15,8 +15,8 @@ from TangoWidgets.TangoWidget import TangoWidget
 class TangoWriteWidget(TangoWidget):
     def __init__(self, name, widget: QWidget, readonly=False):
         super().__init__(name, widget, readonly)
-        self.attribute.device_proxy.set_source(DevSource.DEV)
         try:
+            self.attribute.device_proxy.set_source(DevSource.DEV)
             self.attribute.read(force=True, sync=False)
         except (TangoAttributeConnectionFailed, DevFailed):
             pass

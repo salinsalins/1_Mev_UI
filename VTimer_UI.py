@@ -16,7 +16,7 @@ if util_path not in sys.path:
 del util_path
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5 import uic
+from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QTimer
 import PyQt5.QtGui as QtGui
 
@@ -562,10 +562,14 @@ if __name__ == '__main__':
     # Create the GUI application
     app = QApplication(sys.argv)
     # Instantiate the main window
-    dmw = MainWindow()
-    app.aboutToQuit.connect(dmw.onQuit)
-    # Show it
-    dmw.show()
-    # Start the Qt main loop execution, exiting from this script
-    # with the same return code of Qt application
+    splash = QtWidgets.QSplashScreen(QtGui.QPixmap("IAM.jpg") )
+    splash.showMessage("Загрузка данных... 0%",
+                 QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom, QtCore.Qt.white)
+    splash.show()                  # Отображаем заставку
+    QtWidgets.qApp.processEvents() # Запускаем оборот цикла
+    window = MainWindow()
+    app.aboutToQuit.connect(window.onQuit)
+    window.setWindowTitle("Использование класса QSplashScreen")
+    window.show()
+    splash.finish(window)	# Скрываем заставку
     sys.exit(app.exec_())
