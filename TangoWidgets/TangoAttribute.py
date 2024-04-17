@@ -4,13 +4,18 @@ Created on Feb 4, 2020
 
 @author: sanin
 """
-import logging
+import os
 import sys
 import time
+import logging
 
 import tango
 from tango import DevFailed, DevLong, DevLong64, DevULong, DevULong64, AttributeConfig, DevSource
 
+util_path = os.path.realpath('../TangoUtils')
+if util_path not in sys.path:
+    sys.path.append(util_path)
+del util_path
 from TangoUtils import split_attribute_name
 from config_logger import config_logger
 from log_exception import log_exception
@@ -21,14 +26,13 @@ class TangoAttributeConnectionFailed(tango.ConnectionFailed):
 
 
 class TangoAttribute:
-    devices = {}
 
-    def __init__(self, name: str, level=logging.DEBUG, readonly=False, use_history=True, **kwargs):
+    def __init__(self, name: str, use_history=True, readonly=False, level=logging.DEBUG, **kwargs):
         # configure logging
         self.logger = kwargs.get('logger', config_logger(level=level))
         #
         self.time = time.time()
-        self.full_name = str(name)
+        self.full_name = str(name).strip()
         self.device_name, self.attribute_name = split_attribute_name(self.full_name)
         self.device_proxy = None
         self.connected = False
@@ -39,7 +43,7 @@ class TangoAttribute:
         self.coeff = 1.0
         self.readonly = readonly
         self.use_history = use_history
-        self.history_valid_time = kwargs.get('history_valid_time', 0.3)
+        self.history_valid_time = kwargs.get('history_valid_time', 0.5)
         self.attribute_polled = kwargs.get('attribute_polled', False)
         # async operation vars
         self.force_read = kwargs.get('force_read', False)
@@ -61,13 +65,13 @@ class TangoAttribute:
             if self.device_proxy is None:
                 self.disconnect()
                 return False
-            if hasattr(self.device_proxy, 'device_type') and self.device_proxy.device_type == "Uninitialized":
-                self.disconnect()
-                return False
             if not self.attribute_name:
                 self.connected = True
                 self.logger.debug('%s has been connected for device only' % self.full_name)
                 return True
+            if hasattr(self.device_proxy, 'device_type') and self.device_proxy.device_type == "Uninitialized":
+                self.disconnect()
+                return False
             self.set_config()
             self.connected = True
             self.read()
@@ -106,9 +110,9 @@ class TangoAttribute:
             return None
 
     def set_config(self):
+        self.format = '%s'
         self.coeff = 1.0
-        self.config = None
-        self.format = None
+        self.config = tango.AttributeInfoEx()
         self.attribute_polled = None
         if self.device_proxy is None:
             return
@@ -121,7 +125,8 @@ class TangoAttribute:
         except:
             self.coeff = 1.0
         self.readonly = self.readonly or self.is_readonly()
-        self.attribute_polled = self.device_proxy.is_attribute_polled(self.attribute_name)
+        if self.attribute_name:
+            self.attribute_polled = self.device_proxy.is_attribute_polled(self.attribute_name)
 
     def is_readonly(self):
         return self.config.writable == tango.AttrWriteType.READ
