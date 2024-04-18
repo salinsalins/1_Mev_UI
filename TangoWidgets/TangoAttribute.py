@@ -90,6 +90,7 @@ class TangoAttribute:
         if not self.connected:
             return
         self.connected = False
+        self.read_result.quality = tango.AttrQuality.ATTR_INVALID
         self.logger.debug('Attribute %s has been disconnected', self.full_name)
 
     def reconnect(self):
@@ -145,9 +146,10 @@ class TangoAttribute:
 
     def read(self, sync=True, **kwargs):
         if time.time() - self.read_result.time.totime() < self.read_valid_time:
-            return True
+            if self.is_valid():
+                return True
         if not self.reconnect():
-            # self.read_result = tango.DeviceAttribute()
+            self.read_result.quality = tango.AttrQuality.ATTR_INVALID
             return False
         try:
             if sync:
@@ -155,13 +157,10 @@ class TangoAttribute:
             else:
                 self.read_async()
         except tango.AsynReplyNotArrived:
-            # self.read_result = tango.DeviceAttribute()
-            # self.disconnect()
             raise
         except TangoAttributeConnectionFailed:
             self.cancel_asynch_request(self.read_call_id)
             self.read_call_id = None
-            # self.read_result = tango.DeviceAttribute()
             self.disconnect()
             raise
         except KeyboardInterrupt:
@@ -170,7 +169,6 @@ class TangoAttribute:
             log_exception(self.logger, 'Attribute %s read Exception:', self.full_name)
             self.cancel_asynch_request(self.read_call_id)
             self.read_call_id = None
-            # self.read_result = tango.DeviceAttribute()
             self.disconnect()
             raise
         return self.value()
@@ -203,6 +201,7 @@ class TangoAttribute:
                 self.logger.warning('Timeout reading %s', self.full_name)
                 self.cancel_asynch_request(self.read_call_id)
                 self.read_call_id = None
+                self.read_result.quality = tango.AttrQuality.ATTR_INVALID
                 raise
         return False
 
@@ -213,7 +212,7 @@ class TangoAttribute:
         try:
             wvalue = self.write_value(value)
             self.write_sync(wvalue)
-            self.read_sync()
+            # self.read_sync()
             return True
         except tango.AsynReplyNotArrived:
             if time.time() - self.write_time > self.write_timeout:

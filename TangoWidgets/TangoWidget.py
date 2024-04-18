@@ -18,7 +18,6 @@ from TangoWidgets.TangoAttribute import TangoAttribute, TangoAttributeConnection
 class TangoWidget:
     ERROR_TEXT = '****'
     RECONNECT_TIMEOUT = 3.0    # seconds
-    # DEVICES = {}
 
     def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
         self.name = name
@@ -29,18 +28,18 @@ class TangoWidget:
         self.widget = widget
         self.widget.tango_widget = self
         # create attribute proxy
-        self.attribute = TangoAttribute(name, level=level, readonly=readonly, **kwargs)
+        self.attribute = TangoAttribute(name, logger=self.logger, readonly=readonly, **kwargs)
         # first update
         self.update(decorate_only=False)
 
-    def decorate_error(self, text: str = None, *args, **kwargs):
-        if text is None:
-            text = TangoWidget.ERROR_TEXT
+    def decorate_error(self, *args, **kwargs):
         if hasattr(self.widget, 'setText'):
+            text = kwargs.get('text', TangoWidget.ERROR_TEXT)
             self.widget.setText(text)
         self.widget.setStyleSheet('color: gray')
 
-    def decorate_invalid(self, text: str = None, *args, **kwargs):
+    def decorate_invalid(self, *args, **kwargs):
+        text = kwargs.get('text', TangoWidget.ERROR_TEXT)
         if hasattr(self.widget, 'setText') and text is not None:
             self.widget.setText(text)
         self.widget.setStyleSheet('color: red')
@@ -62,7 +61,6 @@ class TangoWidget:
 
     def write(self, value):
         self.attribute.write(value)
-        # self.update(False)
 
     # compare widget displayed value and read attribute value
     def compare(self):
@@ -151,7 +149,7 @@ class TangoWidget:
             return
         try:
             self.write(value)
-            self.read(force=True)
+            self.read(sync=True)
             # self.set_widget_value()
             # self.logger.debug('***** %s', self.attribute.read_result.value)
             self.decorate()

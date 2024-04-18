@@ -79,9 +79,14 @@ class MainWindow(QMainWindow):
         except DevFailed as e:
             log_exception()
             txt = tango_exception_description(e)
-            QMessageBox.critical(self, 'VTimer critical error',
-                                 txt + '\nProgram will quit.', QMessageBox.Ok)
-            exit(-111)
+            #     self.restore = True
+            # QMessageBox.critical(self, 'VTimer critical error',
+            #                      txt + '\nProgram will quit.', QMessageBox.Ok)
+            a = QMessageBox.question(self, 'VTimer critical error',
+                                     txt + '\n\nContinue?',
+                                     QMessageBox.Yes | QMessageBox.No)
+            if a == QMessageBox.No:
+                exit(-111)
         # Widgets definition
         self.enable_widgets = [
             TangoCheckBox(self.timer_device_name + '/channel_enable0', self.checkBox_8),  # ch0           2
