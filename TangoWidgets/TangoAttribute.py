@@ -10,7 +10,7 @@ import time
 import logging
 
 import tango
-from tango import DevFailed, DevLong, DevLong64, DevULong, DevULong64, AttributeConfig, DevSource
+from tango import DevFailed, DevLong, DevLong64, DevULong, DevULong64, AttributeConfig, DevSource, DevShort, DevUShort
 
 util_path = os.path.realpath('../TangoUtils')
 if util_path not in sys.path:
@@ -155,9 +155,9 @@ class TangoAttribute:
             else:
                 self.read_async()
         except tango.AsynReplyNotArrived:
-                # self.read_result = tango.DeviceAttribute()
-                # self.disconnect()
-                raise
+            # self.read_result = tango.DeviceAttribute()
+            # self.disconnect()
+            raise
         except TangoAttributeConnectionFailed:
             self.cancel_asynch_request(self.read_call_id)
             self.read_call_id = None
@@ -206,26 +206,19 @@ class TangoAttribute:
                 raise
         return False
 
-    def write(self, value, sync=None):
-        if self.readonly:
-            return
-        if sync is None:
-            sync = self.sync_write
+    def write(self, value, **kwargs):
+        if not self.reconnect():
+            # self.read_result = tango.DeviceAttribute()
+            return False
         try:
-            self.reconnect()
-            self.test_connection()
             wvalue = self.write_value(value)
-            if sync:
-                self.write_sync(wvalue)
-            else:
-                self.write_async(wvalue)
-            # self.read(force=True)
+            self.write_sync(wvalue)
+            self.read_sync()
         except tango.AsynReplyNotArrived:
             if time.time() - self.write_time > self.write_timeout:
                 msg = 'Timeout writing %s' % self.full_name
                 self.logger.warning(msg)
-                if self.write_call_id is not None:
-                    self.device_proxy.cancel_asynch_request(self.write_call_id)
+                self.device_proxy.cancel_asynch_request(self.write_call_id)
                 self.write_call_id = None
                 self.disconnect()
                 raise
@@ -239,29 +232,33 @@ class TangoAttribute:
             msg = 'Attribute %s write Exception %s' % (self.full_name, sys.exc_info()[0])
             self.logger.info(msg)
             self.logger.debug('Exception:', exc_info=True)
-            if self.write_call_id is not None:
-                self.device_proxy.cancel_asynch_request(self.write_call_id)
+            self.device_proxy.cancel_asynch_request(self.write_call_id)
             self.write_call_id = None
             self.disconnect()
             raise
 
     def write_sync(self, value):
         v = value
-        if self.read_result.type == DevLong or self.read_result.type == DevLong64:
+        if (self.config.data_type == DevLong or
+                self.config.data_type == DevLong64 or
+                self.config.data_type == DevShort or
+                self.config.data_type == DevULong64 or
+                self.config.data_type == DevULong or
+                self.config.data_type == DevUShort):
             v = int(value)
         self.device_proxy.write_attribute(self.attribute_name, v)
 
-    def write_async(self, value):
-        if self.write_call_id is None:
-            # no request before, so send it
-            self.write_call_id = self.device_proxy.write_attribute_asynch(self.attribute_name, value)
-            self.write_time = time.time()
-        # check for request complete
-        self.device_proxy.write_attribute_reply(self.write_call_id)
-        # clear call id
-        self.write_call_id = None
-        # msg = '%s write in %fs' % (self.full_name, time.time() - self.read_time)
-        # self.logger.debug(msg)
+    # def write_async(self, value):
+    #     if self.write_call_id is None:
+    #         # no request before, so send it
+    #         self.write_call_id = self.device_proxy.write_attribute_asynch(self.attribute_name, value)
+    #         self.write_time = time.time()
+    #     # check for request complete
+    #     self.device_proxy.write_attribute_reply(self.write_call_id)
+    #     # clear call id
+    #     self.write_call_id = None
+    #     # msg = '%s write in %fs' % (self.full_name, time.time() - self.read_time)
+    #     # self.logger.debug(msg)
 
     def value(self):
         v = None
