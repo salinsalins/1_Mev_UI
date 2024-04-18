@@ -15,12 +15,13 @@ from TangoWidgets.TangoWidget import TangoWidget
 class TangoWriteWidget(TangoWidget):
     def __init__(self, name, widget: QWidget, readonly=False):
         super().__init__(name, widget, readonly)
+        if self.attribute.device_proxy is None:
+            return
         try:
             self.attribute.device_proxy.set_source(DevSource.DEV)
-            self.attribute.read(force=True, sync=False)
+            self.attribute.read_sync()
         except (TangoAttributeConnectionFailed, DevFailed):
             pass
-        # self.attribute.read_result = self.attribute.device_proxy.read_attribute(self.attribute.attribute_name)
         # update which set widget value from attribute
         self.update(decorate_only=False)
 

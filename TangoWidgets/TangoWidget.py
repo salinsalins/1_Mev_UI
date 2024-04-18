@@ -18,7 +18,7 @@ from TangoWidgets.TangoAttribute import TangoAttribute, TangoAttributeConnection
 class TangoWidget:
     ERROR_TEXT = '****'
     RECONNECT_TIMEOUT = 3.0    # seconds
-    DEVICES = {}
+    # DEVICES = {}
 
     def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
         self.name = name

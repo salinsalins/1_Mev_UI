@@ -214,6 +214,7 @@ class TangoAttribute:
             wvalue = self.write_value(value)
             self.write_sync(wvalue)
             self.read_sync()
+            return True
         except tango.AsynReplyNotArrived:
             if time.time() - self.write_time > self.write_timeout:
                 msg = 'Timeout writing %s' % self.full_name
