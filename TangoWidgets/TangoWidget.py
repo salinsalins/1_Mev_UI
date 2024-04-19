@@ -56,8 +56,8 @@ class TangoWidget:
     def decorate_valid(self, *args, **kwargs):
         self.widget.setStyleSheet('')
 
-    def read(self, force=None, sync=None):
-        return self.attribute.read(force=force, sync=sync)
+    def read(self, **kwargs):
+        return self.attribute.read(**kwargs)
 
     def write(self, value):
         self.attribute.write(value)
