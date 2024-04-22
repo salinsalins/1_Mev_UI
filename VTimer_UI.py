@@ -208,6 +208,26 @@ class MainWindow(QMainWindow):
         # lock timer for exclusive use of this app
         # self.lock_timer()
         # ************
+        self.mode = self.timer_device.read_attribute('mode')
+        if self.mode == 2:
+            # hide some interface items
+            self.comboBox.hide()
+            self.spinBox.hide()
+            self.checkBox_20.hide()
+            self.checkBox_21.hide()
+            self.checkBox_22.hide()
+            self.checkBox_23.hide()
+            self.checkBox_20.setChecked(False)
+            self.checkBox_21.setChecked(False)
+            self.checkBox_22.setChecked(False)
+            self.checkBox_23.setChecked(False)
+            self.pushButton_30.hide()
+            self.pushButton_31.hide()
+            self.pushButton_32.hide()
+            self.pushButton_33.hide()
+            self.wtwdgts[-1].hide()
+            self.wtwdgts[-2].hide()
+        # ************
         # Defile callback task and start timer
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer_handler)
@@ -344,6 +364,10 @@ class MainWindow(QMainWindow):
                 self.pulse_off('Protection interlock')
 
     def run_button_clicked(self, value):
+        if self.mode == 2:  # slave
+            if self.is_pulse_on():  # pulse is on
+                self.pulse_off('Interrupted by user.')
+                return
         if self.comboBox.currentIndex() == 0:  # single
             if self.is_pulse_on():  # pulse is on
                 self.pulse_off('Interrupted by user.')
