@@ -11,11 +11,8 @@ from TangoWidgets.TangoWidget import TangoWidget
 class TangoLED(TangoWidget):
     def __init__(self, name, widget: QPushButton, **kwargs):
         super().__init__(name, widget, **kwargs)
+        # otherwise it will change color
         self.widget.clicked.connect(self.callback)
-        # except:
-        #     msg = '%s creation error.' % name
-        #     self.logger.info(msg)
-        #     self.logger.debug('Exception:', exc_info=True)
 
     def set_widget_value(self, value=None):
         if value is None:

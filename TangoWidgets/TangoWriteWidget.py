@@ -13,17 +13,19 @@ from TangoWidgets.TangoWidget import TangoWidget
 
 
 class TangoWriteWidget(TangoWidget):
-    def __init__(self, name, widget: QWidget, readonly=False):
-        super().__init__(name, widget, readonly)
-        if self.attribute.device_proxy is None:
-            return
-        try:
-            self.attribute.device_proxy.set_source(DevSource.DEV)
-            self.attribute.read_sync()
-        except (TangoAttributeConnectionFailed, DevFailed):
-            pass
-        # update which set widget value from attribute
-        self.update(decorate_only=False)
+    def __init__(self, name, widget: QWidget,
+                 readonly=False, decorate_only=True, **kwargs):
+        super().__init__(name, widget, readonly=readonly,
+                         decorate_only=decorate_only, **kwargs)
+        # if self.attribute.device_proxy is None:
+        #     return
+        # try:
+        #     self.attribute.device_proxy.set_source(DevSource.DEV)
+        #     self.attribute.read_sync()
+        # except (TangoAttributeConnectionFailed, DevFailed):
+        #     pass
+        # # update which set widget value from attribute
+        # self.update(decorate_only=False)
 
     def decorate_error(self, *args, **kwargs):
         self.widget.setStyleSheet('color: gray')
@@ -37,13 +39,8 @@ class TangoWriteWidget(TangoWidget):
         self.widget.setStyleSheet('')
         self.widget.setEnabled(True)
 
-    # def write(self, value):
-    #     self.attribute.write(value)
-        # self.attribute.read(force=True)
-        # self.set_widget_value()
-
     def update(self, decorate_only=True):
-        super().update(decorate_only)
+        super().update(decorate_only=decorate_only)
 
     # compare widget displayed value and read attribute value
     def compare(self, delta_v=None):
@@ -54,25 +51,34 @@ class TangoWriteWidget(TangoWidget):
                 v = self.attribute.valid_value()
                 if v is None:
                     return False
-                if isinstance(v, bool):
-                    return v == self.widget.value()
-                elif isinstance(v, int):
+                if self.attribute.is_boolean():
+                    flag = v == self.widget.value()
+                    if not flag:
+                        self.logger.debug('%s %s != %s', self.attribute.full_name, v, self.widget.value())
+                        return False
+                    return True
+                if self.attribute.is_int():
                     v1 = int(self.widget.value())
-                    if abs(v - v1) > 1:
+                    if v != v1:
                         self.logger.debug('%s %s != %s', self.attribute.full_name, v, v1)
                         return False
-                elif isinstance(v, float):
+                    return True
+                if self.attribute.is_numerical():
                     v1 = float(self.widget.value())
                     if delta_v is None:
                         vs = self.attribute.format % v
                         v1s = self.attribute.format % v1
                         flag = v1s == vs
                     else:
-                        flag = abs(v - v1) <= abs(v * 1e-3)
+                        if v == 0.0:
+                            flag = abs(v - v1) <= 1e-3
+                        else:
+                            flag = abs(v - v1) <= (abs(v) * 3e-3)
                     if not flag:
                         self.logger.debug('%s %s != %s', self.attribute.full_name, v, v1)
                         return False
-                elif isinstance(v, str):
+                    return True
+                if isinstance(v, str):
                     v1 = str(self.widget.value())
                     if v != v1:
                         self.logger.debug('%s %s != %s', self.attribute.full_name, v, v1)

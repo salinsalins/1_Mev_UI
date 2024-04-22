@@ -17,13 +17,13 @@ from TangoWidgets.TangoAttribute import TangoAttribute, TangoAttributeConnection
 
 class TangoWidget:
     ERROR_TEXT = '****'
-    RECONNECT_TIMEOUT = 3.0    # seconds
+    RECONNECT_TIMEOUT = 3.0  # seconds
 
-    def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
+    def __init__(self, name: str, widget: QWidget, readonly: bool = True,
+                 decorate_only: bool = False, level=logging.DEBUG, **kwargs):
         self.name = name
-        self.logger = kwargs.get('logger', config_logger(level=level))
-        self.decorate_only = kwargs.pop('decorate_only', False)
-        self.update_dt = 0.0
+        self.logger = kwargs.pop('logger', config_logger(level=level))
+        self.decorate_only = decorate_only
         # widget
         self.widget = widget
         self.widget.tango_widget = self
@@ -32,26 +32,27 @@ class TangoWidget:
         # first update
         self.update(decorate_only=False)
 
-    def decorate_error(self, *args, **kwargs):
+    def decorate_error(self, color: str = 'gray', **kwargs):
         if hasattr(self.widget, 'setText'):
             text = kwargs.get('text', TangoWidget.ERROR_TEXT)
             self.widget.setText(text)
-        self.widget.setStyleSheet('color: gray')
+        self.widget.setStyleSheet('color: ' + color)
 
-    def decorate_invalid(self, *args, **kwargs):
-        text = kwargs.get('text', TangoWidget.ERROR_TEXT)
-        if hasattr(self.widget, 'setText') and text is not None:
-            self.widget.setText(text)
-        self.widget.setStyleSheet('color: red')
+    def decorate_invalid(self, **kwargs):
+        self.decorate_error(color='red')
+        # text = kwargs.get('text', TangoWidget.ERROR_TEXT)
+        # if hasattr(self.widget, 'setText') and text is not None:
+        #     self.widget.setText(text)
+        # self.widget.setStyleSheet('color: red')
 
-    def decorate_invalid_data_format(self, text: str = None, *args, **kwargs):
-        self.decorate_invalid(text, *args, **kwargs)
+    def decorate_invalid_data_format(self, text: str = None, **kwargs):
+        self.decorate_invalid(text=text, **kwargs)
 
-    def decorate_not_equal(self, text: str = None, *args, **kwargs):
-        self.decorate_invalid(text, *args, **kwargs)
+    def decorate_not_equal(self, text: str = None, **kwargs):
+        self.decorate_invalid(text=text, **kwargs)
 
-    def decorate_invalid_quality(self, *args, **kwargs):
-        self.decorate_invalid(*args, **kwargs)
+    def decorate_invalid_quality(self, **kwargs):
+        self.decorate_invalid(**kwargs)
 
     def decorate_valid(self, *args, **kwargs):
         self.widget.setStyleSheet('')

@@ -13,8 +13,8 @@ class TangoRadioButton(TangoWidget):
         super().__init__(name, widget, readonly)
         self.widget.toggled.connect(self.callback)
 
-    def decorate_error(self):
-        self.widget.setStyleSheet('color: gray')
+    def decorate_error(self, color: str = 'grey', **kwargs):
+        self.widget.setStyleSheet('color: ' + color)
         self.widget.setEnabled(False)
 
     def decorate_invalid(self):
