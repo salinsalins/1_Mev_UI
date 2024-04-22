@@ -233,7 +233,7 @@ class TangoAttribute:
             if time.time() - self.write_time > self.write_timeout:
                 msg = 'Timeout writing %s' % self.full_name
                 self.logger.warning(msg)
-                self.device_proxy.cancel_asynch_request(self.write_call_id)
+                self.cancel_asynch_request(self.write_call_id)
                 self.write_call_id = None
                 self.disconnect()
                 raise
@@ -247,7 +247,7 @@ class TangoAttribute:
             msg = 'Attribute %s write Exception %s' % (self.full_name, sys.exc_info()[0])
             self.logger.info(msg)
             self.logger.debug('Exception:', exc_info=True)
-            self.device_proxy.cancel_asynch_request(self.write_call_id)
+            self.cancel_asynch_request(self.write_call_id)
             self.write_call_id = None
             self.disconnect()
             raise

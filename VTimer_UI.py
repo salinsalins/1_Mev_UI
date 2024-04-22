@@ -208,11 +208,18 @@ class MainWindow(QMainWindow):
         # lock timer for exclusive use of this app
         # self.lock_timer()
         # ************
-        self.mode = self.timer_device.read_attribute('mode')
+        self.mode = self.timer_device.mode
         if self.mode == 2:
             # hide some interface items
             self.comboBox.hide()
             self.spinBox.hide()
+            self.label.hide()
+            self.pushButton.hide()
+            self.label_7.hide()
+            self.label_8.hide()
+            self.label_9.hide()
+            self.label_10.hide()
+            self.label_46.hide()
             self.checkBox_20.hide()
             self.checkBox_21.hide()
             self.checkBox_22.hide()
@@ -225,8 +232,8 @@ class MainWindow(QMainWindow):
             self.pushButton_31.hide()
             self.pushButton_32.hide()
             self.pushButton_33.hide()
-            self.wtwdgts[-1].hide()
-            self.wtwdgts[-2].hide()
+            self.wtwdgts[-1].widget.hide()
+            self.wtwdgts[-2].widget.hide()
         # ************
         # Defile callback task and start timer
         self.timer = QTimer()
@@ -569,10 +576,14 @@ class MainWindow(QMainWindow):
             self.update_remained()
             if self.is_pulse_on():
                 # pulse is ON LED -> ON
+                if self.mode == 2:
+                    self.pushButton.show()
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')
             else:
                 # pulse is OFF LED -> OFF
+                if self.mode == 2:
+                    self.pushButton.hide()
                 self.pushButton.setStyleSheet('')
                 if self.comboBox.currentIndex() == 0:
                     self.pushButton.setText('Shoot')
