@@ -561,19 +561,20 @@ class MainWindow(QMainWindow):
         # self.logger.debug("*** entry")
         t0 = time.time()
         try:
-            self.update_timer_on_led()
-            self.update_ready_led()
-            # periodical shooting
-            if self.periodical and self.period > 0.0:
-                if time.time() - self.last_shot_time >= self.period:
-                    if self.is_pulse_on():
-                        QMessageBox.critical(self, 'Wrong Period',
-                                             'Shot is on during period expired', QMessageBox.Ok)
-                        self.single_periodical_callback(0)
-                    else:
-                        self.start_pulse()
-            self.update_elapsed()
-            self.update_remained()
+            if self.mode != 2:
+                self.update_timer_on_led()
+                self.update_ready_led()
+                # periodical shooting
+                if self.periodical and self.period > 0.0:
+                    if time.time() - self.last_shot_time >= self.period:
+                        if self.is_pulse_on():
+                            QMessageBox.critical(self, 'Wrong Period',
+                                                 'Shot is on during period expired', QMessageBox.Ok)
+                            self.single_periodical_callback(0)
+                        else:
+                            self.start_pulse()
+                self.update_elapsed()
+                self.update_remained()
             if self.is_pulse_on():
                 # pulse is ON LED -> ON
                 if self.mode == 2:
@@ -593,6 +594,9 @@ class MainWindow(QMainWindow):
             while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.7:
                 if self.n < len(self.widgets) and self.widgets[self.n].widget.isVisible():
                     self.widgets[self.n].update()
+                    # if self.mode == 2:
+                    #     if not self.widgets[self.n].compare():
+                    #         self.widgets[self.n].set_widget_value()
                 self.n += 1
                 if self.n >= len(self.widgets):
                     self.n = 0
