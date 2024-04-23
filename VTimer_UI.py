@@ -7,6 +7,7 @@ Created on Jul 28, 2019
 
 import os.path
 import sys
+import time
 from collections import deque
 
 from tango import DevFailed
@@ -87,6 +88,15 @@ class MainWindow(QMainWindow):
                                      QMessageBox.Yes | QMessageBox.No)
             if a == QMessageBox.No:
                 exit(-111)
+        # declare additional devices
+        self.device_names = self.config.get('device_names', [])
+        self.config['device_names'] = self.device_names
+        self.devices = {}
+        for d in self.device_names:
+            try:
+                self.devices[d] = tango.DeviceProxy(d)
+            except DevFailed as e:
+                log_exception('Can not connect device %s', d)
         # Widgets definition
         self.enable_widgets = [
             TangoCheckBox(self.timer_device_name + '/channel_enable0', self.checkBox_8),  # ch0           2
@@ -179,7 +189,8 @@ class MainWindow(QMainWindow):
                         # +
                         # [self.lauda, self.rf, self.pg, self.anode_power_led] +
                         # [self.elapsed_widget])
-        # self.max_time = 0.0
+        # time of update for widgets
+        self.wtime = [time.time() for w in self.widgets]
         # *******************************
         # additional decorations
         # self.single_periodical_callback(self.comboBox.currentIndex())
@@ -215,6 +226,11 @@ class MainWindow(QMainWindow):
             self.spinBox.hide()
             self.label.hide()
             self.pushButton.hide()
+            self.label_2.hide()
+            self.label_3.hide()
+            self.label_4.hide()
+            self.label_5.hide()
+            self.label_6.hide()
             self.label_7.hide()
             self.label_8.hide()
             self.label_9.hide()
@@ -232,8 +248,10 @@ class MainWindow(QMainWindow):
             self.pushButton_31.hide()
             self.pushButton_32.hide()
             self.pushButton_33.hide()
+            self.pushButton_34.hide()
             self.wtwdgts[-1].widget.hide()
             self.wtwdgts[-2].widget.hide()
+            # self.gridLayout.hide()
         # ************
         # Defile callback task and start timer
         self.timer = QTimer()
@@ -561,8 +579,8 @@ class MainWindow(QMainWindow):
         # self.logger.debug("*** entry")
         t0 = time.time()
         try:
+            self.update_timer_on_led()
             if self.mode != 2:
-                self.update_timer_on_led()
                 self.update_ready_led()
                 # periodical shooting
                 if self.periodical and self.period > 0.0:
@@ -594,9 +612,13 @@ class MainWindow(QMainWindow):
             while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.7:
                 if self.n < len(self.widgets) and self.widgets[self.n].widget.isVisible():
                     self.widgets[self.n].update()
-                    # if self.mode == 2:
-                    #     if not self.widgets[self.n].compare():
-                    #         self.widgets[self.n].set_widget_value()
+                    if self.mode == 2:
+                        if not self.widgets[self.n].compare():
+                            self.widgets[self.n].widget.setStyleSheet('color: blue')
+                            if time.time() - self.wtime[self.n] > 2.0:
+                                self.widgets[self.n].set_widget_value()
+                        else:
+                            self.wtime[self.n] = time.time()
                 self.n += 1
                 if self.n >= len(self.widgets):
                     self.n = 0

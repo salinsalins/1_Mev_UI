@@ -38,18 +38,14 @@ class TangoWidget:
             self.widget.setText(text)
         self.widget.setStyleSheet('color: ' + color)
 
-    def decorate_invalid(self, **kwargs):
-        self.decorate_error(color='red')
-        # text = kwargs.get('text', TangoWidget.ERROR_TEXT)
-        # if hasattr(self.widget, 'setText') and text is not None:
-        #     self.widget.setText(text)
-        # self.widget.setStyleSheet('color: red')
+    def decorate_invalid(self, color: str = 'red', **kwargs):
+        self.decorate_error(color=color)
 
-    def decorate_invalid_data_format(self, text: str = None, **kwargs):
-        self.decorate_invalid(text=text, **kwargs)
+    def decorate_invalid_data_format(self, color: str = 'red', text: str = None, **kwargs):
+        self.decorate_invalid(text=text, color=color, **kwargs)
 
-    def decorate_not_equal(self, text: str = None, **kwargs):
-        self.decorate_invalid(text=text, **kwargs)
+    def decorate_not_equal(self, color: str = 'red', text: str = None, **kwargs):
+        self.decorate_invalid(text=text, color=color, **kwargs)
 
     def decorate_invalid_quality(self, **kwargs):
         self.decorate_invalid(**kwargs)

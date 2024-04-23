@@ -28,11 +28,12 @@ class TangoWriteWidget(TangoWidget):
         # self.update(decorate_only=False)
 
     def decorate_error(self, *args, **kwargs):
-        self.widget.setStyleSheet('color: gray')
+        super().decorate_error(*args, **kwargs)
         self.widget.setEnabled(False)
 
     def decorate_invalid(self, *args, **kwargs):
-        self.widget.setStyleSheet('color: red')
+        super().decorate_invalid(**kwargs)
+        # self.widget.setStyleSheet('color: red')
         self.widget.setEnabled(True)
 
     def decorate_valid(self):
