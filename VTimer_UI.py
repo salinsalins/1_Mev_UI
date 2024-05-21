@@ -12,12 +12,12 @@ from collections import deque
 
 from tango import DevFailed
 
-from TangoUtils import tango_exception_reason, tango_exception_description
-
 util_path = os.path.realpath('../TangoUtils')
 if util_path not in sys.path:
     sys.path.append(util_path)
 del util_path
+
+from TangoUtils import tango_exception_reason, tango_exception_description
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic, QtCore
@@ -207,8 +207,8 @@ class MainWindow(QMainWindow):
         self.spinBox.valueChanged.connect(self.period_changed)
         # TangoAbstractSpinBox(self.timer_device_name + '/Period', self.spinBox),  # period             0
         # prevent non tango leds from changing color when clicked
-        self.pushButton_34.mouseReleaseEvent = self.absorb_event
-        self.pushButton_29.mouseReleaseEvent = self.absorb_event
+        # self.pushButton_34.mouseReleaseEvent = self.absorb_event
+        # self.pushButton_29.mouseReleaseEvent = self.absorb_event
         # ************
         # resize main window
         self.resize_main_window()
