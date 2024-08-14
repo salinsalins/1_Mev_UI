@@ -17,7 +17,7 @@ from tango import DevFailed
 from TangoUtils import tango_exception_reason, tango_exception_description
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5 import uic, QtCore
+from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 
 from TangoWidgets.TangoAttribute import TangoAttribute
