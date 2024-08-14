@@ -5,17 +5,14 @@ Created on Jul 28, 2019
 @author: sanin
 """
 
-import os.path
 import sys
-import time
+import os
+if os.path.realpath('../TangoUtils') not in sys.path: sys.path.append(os.path.realpath('../TangoUtils'))
+
 from collections import deque
 
 from tango import DevFailed
 
-util_path = os.path.realpath('../TangoUtils')
-if util_path not in sys.path:
-    sys.path.append(util_path)
-del util_path
 
 from TangoUtils import tango_exception_reason, tango_exception_description
 
@@ -77,17 +74,19 @@ class MainWindow(QMainWindow):
         self.period = self.spinBox.value()
         try:
             self.timer_device = tango.DeviceProxy(self.timer_device_name)
+            self.timer_device.ping()
         except DevFailed as e:
             log_exception()
             txt = tango_exception_description(e)
             #     self.restore = True
-            # QMessageBox.critical(self, 'VTimer critical error',
-            #                      txt + '\nProgram will quit.', QMessageBox.Ok)
-            a = QMessageBox.question(self, 'VTimer critical error',
-                                     txt + '\n\nContinue?',
-                                     QMessageBox.Yes | QMessageBox.No)
-            if a == QMessageBox.No:
-                exit(-111)
+            QMessageBox.critical(None, 'VTimer critical error',
+                                 txt + '\nProgram will quit.', QMessageBox.Ok)
+            exit(-111)
+            # a = QMessageBox.question(None, 'VTimer critical error',
+            #                          txt + '\n\nContinue?',
+            #                          QMessageBox.Yes | QMessageBox.No)
+            # if a == QMessageBox.No:
+            #     exit(-111)
         # declare additional devices
         self.device_names = self.config.get('device_names', [])
         self.config['device_names'] = self.device_names
@@ -95,8 +94,15 @@ class MainWindow(QMainWindow):
         for d in self.device_names:
             try:
                 self.devices[d] = tango.DeviceProxy(d)
+                self.devices[d].ping()
             except DevFailed as e:
-                log_exception('Can not connect device %s', d)
+                txt = 'Can not connect device %s' % d
+                log_exception(txt)
+                a = QMessageBox.question(None, 'VTimer critical error',
+                                         txt + '\n\nContinue?',
+                                         QMessageBox.Yes | QMessageBox.No)
+                if a == QMessageBox.No:
+                    exit(-111)
         # Widgets definition
         self.enable_widgets = [
             TangoCheckBox(self.timer_device_name + '/channel_enable0', self.checkBox_8),  # ch0           2
