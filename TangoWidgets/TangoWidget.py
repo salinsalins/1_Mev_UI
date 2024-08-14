@@ -91,6 +91,7 @@ class TangoWidget:
         except TangoAttributeConnectionFailed:
             # log_exception(self.logger, no_info=True)
             # self.set_attribute_value()
+            self.logger.error('Connection failed for %s', self.name)
             self.decorate_error()
         except KeyboardInterrupt:
             raise
