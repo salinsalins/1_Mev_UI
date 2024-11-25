@@ -640,6 +640,10 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) >= 2:
+        CONFIG_FILE = sys.argv[1]
+        if not CONFIG_FILE.endswith('.json'):
+            CONFIG_FILE += '.json'
     # Create the GUI application
     app = QApplication(sys.argv)
     # Instantiate the main window
