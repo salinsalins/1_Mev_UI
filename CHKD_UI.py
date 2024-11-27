@@ -13,8 +13,13 @@ import PyQt5.QtGui as QtGui
 from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
 from TangoWidgets.RF_ready_LED import RF_ready_LED
 from TangoWidgets.RF_on_LED import RF_on_LED
+from TangoWidgets.TangoLED import TangoLED
+from TangoWidgets.TangoLabel import TangoLabel
 from TangoWidgets.TangoPushButton import TangoPushButton
+from TangoWidgets.TangoSpinBox import TangoSpinBox
+from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
 from TangoWidgets.Utils import *
+from config_logger import config_logger
 
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = 'CHKD_UI'
@@ -47,11 +52,19 @@ class MainWindow(QMainWindow):
         restore_settings(self, file_name=CONFIG_FILE)
 
         # read attributes TangoWidgets list
-        self.rdwdgts = ()
+        self.rdwdgts = (
+            TangoLabel("binp/nbi/ckd/out_voltage", self.lineEdit),
+            TangoLabel("binp/nbi/ckd/out_current", self.lineEdit_2),
+            TangoLED("binp/nbi/ckd/error_state", self.pushButton_42),
+            TangoLabel("binp/nbi/ckd/operation_state", self.label_5),
+
+        )
         # writable attributes TangoWidgets list
         self.wtwdgts = (
             TangoPushButton("binp/nbi/PETchkd/do05", self.pushButton_3, False),
             TangoPushButton("binp/nbi/PETchkd/do04", self.pushButton_4, False),
+            TangoSpinBox("binp/nbi/ckd/set_voltage", self.spinBox, False),
+            TangoSpinBox("binp/nbi/ckd/set_current", self.spinBox_2, False),
         )
         # Defile and start timer callback task
         self.timer = QTimer()

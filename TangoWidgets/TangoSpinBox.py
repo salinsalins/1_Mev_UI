@@ -9,7 +9,7 @@ import math
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QSpinBox
 
-from TangoAbstractSpinBox import TangoAbstractSpinBox
+from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
 
 
 class TangoSpinBox(TangoAbstractSpinBox):
