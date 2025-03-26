@@ -61,6 +61,7 @@ class MainWindow(QMainWindow):
         # read only attributes
         self.rdwdgts = (
             TangoLED(self.config.get('run', 'binp/nbi/small_lauda/run'), self.pushButton_31),
+            TangoLED(self.config.get('error', 'binp/nbi/small_lauda/error_diagnosis'), self.pushButton_32),
             TangoLabel(self.config.get('output_temp', 'binp/nbi/small_lauda/output_temp'), self.label_3),
             TangoLabel(self.config.get('pressure', 'binp/nbi/small_lauda/pressure'), self.label_5)
         )
@@ -71,6 +72,14 @@ class MainWindow(QMainWindow):
             TangoComboBox(self.config.get('cooling_mode', "binp/nbi/small_lauda/cooling_mode"), self.comboBox, False),
             TangoAbstractSpinBox(self.config.get('pump', 'binp/nbi/small_lauda/pump'), self.spinBox_2, False)
         )
+        # widgets tuning
+        def set_widget_value_status(self, value=None):
+            if value is None:
+                value = self.attribute.value() == '0000000'
+            self.widget.setChecked(bool(value))
+            return bool(value)
+
+        self.rdwdgts[2].set_widget_value = set_widget_value_status
         #
         TangoWidget.RECONNECT_TIMEOUT = 5.0
         # Connect signals with slots
