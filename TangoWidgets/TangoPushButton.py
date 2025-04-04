@@ -36,7 +36,7 @@ class TangoPushButton(TangoWriteWidget):
         super().callback(self.widget.isChecked())
 
     # compare widget displayed value and read attribute value
-    def compare(self):
+    def compare(self, **kwargs):
         if self.attribute.is_readonly():
             return True
         else:

@@ -17,52 +17,47 @@ from TangoWidgets.TangoAttribute import TangoAttribute, TangoAttributeConnection
 
 class TangoWidget:
     ERROR_TEXT = '****'
-    RECONNECT_TIMEOUT = 3.0    # seconds
-    DEVICES = {}
+    RECONNECT_TIMEOUT = 3.0  # seconds
 
-    def __init__(self, name: str, widget: QWidget, readonly: bool = True,  level=logging.DEBUG, **kwargs):
+    def __init__(self, name: str, widget: QWidget, readonly: bool = True,
+                 decorate_only: bool = False, level=logging.DEBUG, **kwargs):
         self.name = name
-        self.logger = kwargs.get('logger', config_logger(level=level))
-        self.decorate_only = kwargs.pop('decorate_only', False)
-        self.update_dt = 0.0
+        self.logger = kwargs.pop('logger', config_logger(level=level))
+        self.decorate_only = decorate_only
         # widget
         self.widget = widget
         self.widget.tango_widget = self
         # create attribute proxy
-        self.attribute = TangoAttribute(name, level=level, readonly=readonly, **kwargs)
+        self.attribute = TangoAttribute(name, logger=self.logger, readonly=readonly, **kwargs)
         # first update
         self.update(decorate_only=False)
 
-    def decorate_error(self, text: str = None, *args, **kwargs):
-        if text is None:
-            text = TangoWidget.ERROR_TEXT
+    def decorate_error(self, color: str = 'gray', **kwargs):
         if hasattr(self.widget, 'setText'):
+            text = kwargs.get('text', TangoWidget.ERROR_TEXT)
             self.widget.setText(text)
-        self.widget.setStyleSheet('color: gray')
+        self.widget.setStyleSheet('color: ' + color)
 
-    def decorate_invalid(self, text: str = None, *args, **kwargs):
-        if hasattr(self.widget, 'setText') and text is not None:
-            self.widget.setText(text)
-        self.widget.setStyleSheet('color: red')
+    def decorate_invalid(self, color: str = 'red', **kwargs):
+        self.decorate_error(color=color)
 
-    def decorate_invalid_data_format(self, text: str = None, *args, **kwargs):
-        self.decorate_invalid(text, *args, **kwargs)
+    def decorate_invalid_data_format(self, color: str = 'red', text: str = None, **kwargs):
+        self.decorate_invalid(text=text, color=color, **kwargs)
 
-    def decorate_not_equal(self, text: str = None, *args, **kwargs):
-        self.decorate_invalid(text, *args, **kwargs)
+    def decorate_not_equal(self, color: str = 'red', text: str = None, **kwargs):
+        self.decorate_invalid(text=text, color=color, **kwargs)
 
-    def decorate_invalid_quality(self, *args, **kwargs):
-        self.decorate_invalid(*args, **kwargs)
+    def decorate_invalid_quality(self, **kwargs):
+        self.decorate_invalid(**kwargs)
 
     def decorate_valid(self, *args, **kwargs):
         self.widget.setStyleSheet('')
 
-    def read(self, force=None, sync=None):
-        return self.attribute.read(force=force, sync=sync)
+    def read(self, **kwargs):
+        return self.attribute.read(**kwargs)
 
     def write(self, value):
         self.attribute.write(value)
-        # self.update(False)
 
     # compare widget displayed value and read attribute value
     def compare(self):
@@ -96,6 +91,7 @@ class TangoWidget:
         except TangoAttributeConnectionFailed:
             # log_exception(self.logger, no_info=True)
             # self.set_attribute_value()
+            self.logger.error('Connection failed for %s', self.name)
             self.decorate_error()
         except KeyboardInterrupt:
             raise
@@ -151,7 +147,7 @@ class TangoWidget:
             return
         try:
             self.write(value)
-            self.read(force=True)
+            self.read(sync=True)
             # self.set_widget_value()
             # self.logger.debug('***** %s', self.attribute.read_result.value)
             self.decorate()

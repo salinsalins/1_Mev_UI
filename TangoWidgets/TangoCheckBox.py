@@ -8,9 +8,7 @@ Created on Jan 3, 2020
 from PyQt5.QtWidgets import QCheckBox
 
 from TangoWidgets.TangoWriteWidget import TangoWriteWidget
-
 from TangoWidgets.images import cb_resources
-
 # import images.cb_resources # DO NOT delete
 
 class TangoCheckBox(TangoWriteWidget):
@@ -18,14 +16,6 @@ class TangoCheckBox(TangoWriteWidget):
         super().__init__(name, widget, readonly=readonly)
         if not readonly:
             self.widget.stateChanged.connect(self.callback)
-
-    def update(self, decorate_only=True):
-        super().update(decorate_only)
-
-    def set_widget_value(self):
-        if self.attribute.is_readonly():
-            return
-        self.widget.setChecked(bool(self.attribute.value()))
 
     def decorate_error(self):
         self.widget.setStyleSheet('color: gray')
@@ -48,16 +38,3 @@ class TangoCheckBox(TangoWriteWidget):
         except:
             self.logger.debug('Exception in CheckBox compare', exc_info=True)
             return False
-
-    # def callback(self, value):
-    #     if self.attribute.connected:
-    #         try:
-    #             self.dp.write_attribute(self.an, bool(value))
-    #             self.decorate_valid()
-    #         except:
-    #             self.logger.debug('Exception in CheckBox callback', exc_info=True)
-    #             self.decorate_error()
-    #     else:
-    #         if time.time() - self.time > TangoWidget.RECONNECT_TIMEOUT:
-    #             self.connect_attribute_proxy()
-    #         self.decorate_error()

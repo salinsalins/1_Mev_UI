@@ -4,6 +4,7 @@ Created on Jan 3, 2020
 
 @author: sanin
 '''
+import time
 
 from PyQt5.QtWidgets import QLabel
 from TangoWidgets.TangoWidget import TangoWidget
@@ -11,7 +12,7 @@ import tango
 
 
 class TangoLabel(TangoWidget):
-    def __init__(self, name, widget: QLabel, prop=None, refresh=False):
+    def __init__(self, name, widget: QLabel, prop=None, refresh=True, valid_time=3.0):
         self.property = prop
         if self.property is None:
             self.database = None
@@ -19,7 +20,7 @@ class TangoLabel(TangoWidget):
             self.database = tango.Database()
         self.property_value = None
         self.refresh = refresh
-        super().__init__(name, widget, readonly=True)
+        super().__init__(name, widget, readonly=True, read_valid_time=valid_time)
 
     def read_property(self):
         if self.database is None:
@@ -31,7 +32,9 @@ class TangoLabel(TangoWidget):
 
     def read(self, force=None, sync=None):
         if self.property is None:
-            super().read(force, sync)
+            super().read(sync=sync)
+            return
+        if time.time() - self.attribute.read_result.time.totime() < self.attribute.read_valid_time:
             return
         if self.refresh or self.property_value is None:
             self.read_property()

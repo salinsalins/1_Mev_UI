@@ -5,27 +5,26 @@ Created on Jul 28, 2019
 @author: sanin
 """
 
-import os.path
 import sys
-import time
+import os
+if os.path.realpath('../TangoUtils') not in sys.path: sys.path.append(os.path.realpath('../TangoUtils'))
+
 from collections import deque
 
-util_path = os.path.realpath('../TangoUtils')
-if util_path not in sys.path:
-    sys.path.append(util_path)
-del util_path
+from tango import DevFailed
+
+
+from TangoUtils import tango_exception_reason, tango_exception_description
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5 import uic, QtCore
+from PyQt5 import uic
 from PyQt5.QtCore import QTimer
-import PyQt5.QtGui as QtGui
 
+from TangoWidgets.TangoAttribute import TangoAttribute
 from TangoWidgets.TangoCheckBox import TangoCheckBox
-from TangoWidgets.TangoComboBox import TangoComboBox
 from TangoWidgets.TangoLED import TangoLED
 from TangoWidgets.TangoLabel import TangoLabel
 from TangoWidgets.TangoAbstractSpinBox import TangoAbstractSpinBox
-from TangoWidgets.Timer_on_LED import Timer_on_LED
 from TangoWidgets.RF_ready_LED import RF_ready_LED
 from TangoWidgets.Lauda_ready_LED import Lauda_ready_LED
 
@@ -73,6 +72,37 @@ class MainWindow(QMainWindow):
         self.period = self.config.get('period', 0.0)
         self.config['period'] = self.period
         self.period = self.spinBox.value()
+        try:
+            self.timer_device = tango.DeviceProxy(self.timer_device_name)
+            self.timer_device.ping()
+        except DevFailed as e:
+            log_exception()
+            txt = tango_exception_description(e)
+            #     self.restore = True
+            QMessageBox.critical(None, 'VTimer critical error',
+                                 txt + '\nProgram will quit.', QMessageBox.Ok)
+            exit(-111)
+            # a = QMessageBox.question(None, 'VTimer critical error',
+            #                          txt + '\n\nContinue?',
+            #                          QMessageBox.Yes | QMessageBox.No)
+            # if a == QMessageBox.No:
+            #     exit(-111)
+        # declare additional devices
+        self.device_names = self.config.get('device_names', [])
+        self.config['device_names'] = self.device_names
+        self.devices = {}
+        for d in self.device_names:
+            try:
+                self.devices[d] = tango.DeviceProxy(d)
+                self.devices[d].ping()
+            except DevFailed as e:
+                txt = 'Can not connect device %s' % d
+                log_exception(txt)
+                a = QMessageBox.question(None, 'VTimer critical error',
+                                         txt + '\n\nContinue?',
+                                         QMessageBox.Yes | QMessageBox.No)
+                if a == QMessageBox.No:
+                    exit(-111)
         # Widgets definition
         self.enable_widgets = [
             TangoCheckBox(self.timer_device_name + '/channel_enable0', self.checkBox_8),  # ch0           2
@@ -142,7 +172,7 @@ class MainWindow(QMainWindow):
         self.timer_on_led.attribute.force_read = True
         self.timer_on_led.attribute.sync_read = True
         #
-        self.timer_device = self.timer_on_led.attribute.device_proxy
+        self.run_attribute = TangoAttribute(self.timer_device_name + '/run')
         # stop pulse at start-up
         self.stop_pulse()
         self.switch_to_single()
@@ -165,7 +195,8 @@ class MainWindow(QMainWindow):
                         # +
                         # [self.lauda, self.rf, self.pg, self.anode_power_led] +
                         # [self.elapsed_widget])
-        # self.max_time = 0.0
+        # time of update for widgets
+        self.wtime = [time.time() for w in self.widgets]
         # *******************************
         # additional decorations
         # self.single_periodical_callback(self.comboBox.currentIndex())
@@ -182,8 +213,8 @@ class MainWindow(QMainWindow):
         self.spinBox.valueChanged.connect(self.period_changed)
         # TangoAbstractSpinBox(self.timer_device_name + '/Period', self.spinBox),  # period             0
         # prevent non tango leds from changing color when clicked
-        self.pushButton_34.mouseReleaseEvent = self.absorb_event
-        self.pushButton_29.mouseReleaseEvent = self.absorb_event
+        # self.pushButton_34.mouseReleaseEvent = self.absorb_event
+        # self.pushButton_29.mouseReleaseEvent = self.absorb_event
         # ************
         # resize main window
         self.resize_main_window()
@@ -193,6 +224,40 @@ class MainWindow(QMainWindow):
         # ************
         # lock timer for exclusive use of this app
         # self.lock_timer()
+        # ************
+        self.mode = self.timer_device.mode
+        if self.mode == 2:
+            # hide some interface items
+            self.comboBox.hide()
+            self.spinBox.hide()
+            self.label.hide()
+            self.pushButton.hide()
+            self.label_2.hide()
+            self.label_3.hide()
+            self.label_4.hide()
+            self.label_5.hide()
+            self.label_6.hide()
+            self.label_7.hide()
+            self.label_8.hide()
+            self.label_9.hide()
+            self.label_10.hide()
+            self.label_46.hide()
+            self.checkBox_20.hide()
+            self.checkBox_21.hide()
+            self.checkBox_22.hide()
+            self.checkBox_23.hide()
+            self.checkBox_20.setChecked(False)
+            self.checkBox_21.setChecked(False)
+            self.checkBox_22.setChecked(False)
+            self.checkBox_23.setChecked(False)
+            self.pushButton_30.hide()
+            self.pushButton_31.hide()
+            self.pushButton_32.hide()
+            self.pushButton_33.hide()
+            self.pushButton_34.hide()
+            self.wtwdgts[-1].widget.hide()
+            self.wtwdgts[-2].widget.hide()
+            # self.gridLayout.hide()
         # ************
         # Defile callback task and start timer
         self.timer = QTimer()
@@ -330,6 +395,10 @@ class MainWindow(QMainWindow):
                 self.pulse_off('Protection interlock')
 
     def run_button_clicked(self, value):
+        if self.mode == 2:  # slave
+            if self.is_pulse_on():  # pulse is on
+                self.pulse_off('Interrupted by user.')
+                return
         if self.comboBox.currentIndex() == 0:  # single
             if self.is_pulse_on():  # pulse is on
                 self.pulse_off('Interrupted by user.')
@@ -510,31 +579,36 @@ class MainWindow(QMainWindow):
         self.last_shot_time = time.time()
 
     def stop_pulse(self):
-        self.timer_device.write_attribute('run', 0)
+        self.run_attribute.write(0)
 
     def timer_handler(self):
         # self.logger.debug("*** entry")
         t0 = time.time()
         try:
             self.update_timer_on_led()
-            self.update_ready_led()
-            # periodical shooting
-            if self.periodical and self.period > 0.0:
-                if time.time() - self.last_shot_time >= self.period:
-                    if self.is_pulse_on():
-                        QMessageBox.critical(self, 'Wrong Period',
-                                             'Shot is on during period expired', QMessageBox.Ok)
-                        self.single_periodical_callback(0)
-                    else:
-                        self.start_pulse()
-            self.update_elapsed()
-            self.update_remained()
+            if self.mode != 2:
+                self.update_ready_led()
+                # periodical shooting
+                if self.periodical and self.period > 0.0:
+                    if time.time() - self.last_shot_time >= self.period:
+                        if self.is_pulse_on():
+                            QMessageBox.critical(self, 'Wrong Period',
+                                                 'Shot is on during period expired', QMessageBox.Ok)
+                            self.single_periodical_callback(0)
+                        else:
+                            self.start_pulse()
+                self.update_elapsed()
+                self.update_remained()
             if self.is_pulse_on():
                 # pulse is ON LED -> ON
+                if self.mode == 2:
+                    self.pushButton.show()
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')
             else:
                 # pulse is OFF LED -> OFF
+                if self.mode == 2:
+                    self.pushButton.hide()
                 self.pushButton.setStyleSheet('')
                 if self.comboBox.currentIndex() == 0:
                     self.pushButton.setText('Shoot')
@@ -544,6 +618,13 @@ class MainWindow(QMainWindow):
             while time.time() - t0 < TIMER_PERIOD / 1000.00 * 0.7:
                 if self.n < len(self.widgets) and self.widgets[self.n].widget.isVisible():
                     self.widgets[self.n].update()
+                    if self.mode == 2:
+                        if not self.widgets[self.n].compare():
+                            self.widgets[self.n].widget.setStyleSheet('color: blue')
+                            if time.time() - self.wtime[self.n] > 2.0:
+                                self.widgets[self.n].set_widget_value()
+                        else:
+                            self.wtime[self.n] = time.time()
                 self.n += 1
                 if self.n >= len(self.widgets):
                     self.n = 0
@@ -559,17 +640,21 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) >= 2:
+        CONFIG_FILE = sys.argv[1]
+        if not CONFIG_FILE.endswith('.json'):
+            CONFIG_FILE += '.json'
     # Create the GUI application
     app = QApplication(sys.argv)
     # Instantiate the main window
-    splash = QtWidgets.QSplashScreen(QtGui.QPixmap("IAM.jpg") )
-    splash.showMessage("Загрузка данных... 0%",
-                 QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom, QtCore.Qt.white)
-    splash.show()                  # Отображаем заставку
-    QtWidgets.qApp.processEvents() # Запускаем оборот цикла
+    # # splash = QtWidgets.QSplashScreen(QtGui.QPixmap("IAM.jpg") )
+    # # splash.showMessage("Connecting to TANGO devices ...",
+    # #              QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom, QtCore.Qt.white)
+    # # splash.show()                  # Отображаем заставку
+    # QtWidgets.qApp.processEvents() # Запускаем оборот цикла
     window = MainWindow()
     app.aboutToQuit.connect(window.onQuit)
-    window.setWindowTitle("Использование класса QSplashScreen")
+    window.setWindowTitle("Vtimer UI")
     window.show()
-    splash.finish(window)	# Скрываем заставку
+    # splash.finish(window)	# Скрываем заставку
     sys.exit(app.exec_())

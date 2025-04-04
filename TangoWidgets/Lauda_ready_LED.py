@@ -45,7 +45,7 @@ class Lauda_ready_LED(TangoLED):
             else:
                 self.widget.setChecked(False)
         except KeyboardInterrupt:
-           raise
+            raise
         except:
             self.widget.setChecked(False)
         return self.widget.isChecked()
