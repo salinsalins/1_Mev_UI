@@ -4,18 +4,16 @@ Created on Mar 25, 2025
 
 @author: sanin
 """
-
+import inspect
 import os
 import sys
-
-from TangoComboBox import TangoComboBox
-
 if os.path.realpath('../TangoUtils') not in sys.path: sys.path.append(os.path.realpath('../TangoUtils'))
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 
+from TangoWidgets.TangoComboBox import TangoComboBox
 from TangoWidgets.TangoWidget import TangoWidget
 from TangoWidgets.TangoLED import TangoLED
 from TangoWidgets.TangoLabel import TangoLabel
@@ -25,6 +23,7 @@ from TangoWidgets.TangoAttribute import TangoAttribute
 from TangoWidgets.Utils import *
 
 from config_logger import config_logger
+from log_exception import log_exception
 
 ORGANIZATION_NAME = 'BINP'
 APPLICATION_NAME = os.path.basename(__file__).replace('.py', '')
@@ -73,13 +72,16 @@ class MainWindow(QMainWindow):
             TangoAbstractSpinBox(self.config.get('pump', 'binp/nbi/small_lauda/pump'), self.spinBox_2, False)
         )
         # widgets tuning
-        def set_widget_value_status(self, value=None):
+
+        def set_status_value(swgt=None, value=None):
+            if swgt is None:
+                swgt = inspect.stack()[1].frame.f_locals['self']
             if value is None:
-                value = self.attribute.value() == '0000000'
-            self.widget.setChecked(bool(value))
+                value = swgt.attribute.value() == '0000000'
+            swgt.widget.setChecked(bool(value))
             return bool(value)
 
-        self.rdwdgts[2].set_widget_value = set_widget_value_status
+        self.rdwdgts[1].set_widget_value = set_status_value
         #
         TangoWidget.RECONNECT_TIMEOUT = 5.0
         # Connect signals with slots
