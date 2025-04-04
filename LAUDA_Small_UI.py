@@ -58,8 +58,8 @@ class MainWindow(QMainWindow):
 
         print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
 
+        restore_settings(self, file_name=CONFIG_FILE)
         self.config = Configuration(CONFIG_FILE)
-        # restore_settings(self, file_name=CONFIG_FILE)
 
         # read only attributes
         self.rdwdgts = (
@@ -99,8 +99,8 @@ class MainWindow(QMainWindow):
 
     def onQuit(self) :
         # Save global settings
-        self.config.write()
-        # save_settings(self, file_name=CONFIG_FILE)
+        # self.config.write()
+        save_settings(self, file_name=CONFIG_FILE)
         self.timer.stop()
         
     def timer_handler(self):
@@ -122,7 +122,6 @@ class MainWindow(QMainWindow):
             if count >= count_max:
                 self.elapsed = time.time() - t0
                 return
-
 
 if __name__ == '__main__':
     # Create the GUI application
