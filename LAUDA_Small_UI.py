@@ -7,6 +7,9 @@ Created on Mar 25, 2025
 import inspect
 import os
 import sys
+
+from Configuration import Configuration
+
 if os.path.realpath('../TangoUtils') not in sys.path: sys.path.append(os.path.realpath('../TangoUtils'))
 
 from PyQt5.QtWidgets import QApplication
@@ -55,21 +58,22 @@ class MainWindow(QMainWindow):
 
         print(APPLICATION_NAME + ' version ' + APPLICATION_VERSION + ' started')
 
-        restore_settings(self, file_name=CONFIG_FILE)
+        self.config = Configuration(CONFIG_FILE)
+        # restore_settings(self, file_name=CONFIG_FILE)
 
         # read only attributes
         self.rdwdgts = (
-            TangoLED(self.config.get('run', 'binp/nbi/small_lauda/run'), self.pushButton_31),
-            TangoLED(self.config.get('error', 'binp/nbi/small_lauda/error_diagnosis'), self.pushButton_32),
-            TangoLabel(self.config.get('output_temp', 'binp/nbi/small_lauda/output_temp'), self.label_3),
-            TangoLabel(self.config.get('pressure', 'binp/nbi/small_lauda/pressure'), self.label_5)
+            TangoLED(self.config.get('run', 'binp/nbi/lauda_small/run'), self.pushButton_31),
+            TangoLED(self.config.get('error', 'binp/nbi/lauda_small/error_diagnosis'), self.pushButton_32),
+            TangoLabel(self.config.get('output_temp', 'binp/nbi/lauda_small/output_temp'), self.label_3),
+            TangoLabel(self.config.get('pressure', 'binp/nbi/lauda_small/pressure'), self.label_5)
         )
         # writable attributes
         self.wtwdgts = (
-            TangoAbstractSpinBox(self.config.get('set_point', 'binp/nbi/small_lauda/set_point'), self.spinBox, False),
-            TangoPushButton(self.config.get('run', "binp/nbi/small_lauda/run"), self.pushButton, False),
-            TangoComboBox(self.config.get('cooling_mode', "binp/nbi/small_lauda/cooling_mode"), self.comboBox, False),
-            TangoAbstractSpinBox(self.config.get('pump', 'binp/nbi/small_lauda/pump'), self.spinBox_2, False)
+            TangoAbstractSpinBox(self.config.get('set_point', 'binp/nbi/lauda_small/set_point'), self.spinBox, False),
+            TangoPushButton(self.config.get('run', "binp/nbi/lauda_small/run"), self.pushButton, False),
+            TangoComboBox(self.config.get('cooling_mode', "binp/nbi/lauda_small/cooling_mode"), self.comboBox, False),
+            TangoAbstractSpinBox(self.config.get('pump', 'binp/nbi/lauda_small/pump'), self.spinBox_2, False)
         )
         # widgets tuning
 
@@ -95,7 +99,8 @@ class MainWindow(QMainWindow):
 
     def onQuit(self) :
         # Save global settings
-        save_settings(self, file_name=CONFIG_FILE)
+        self.config.write()
+        # save_settings(self, file_name=CONFIG_FILE)
         self.timer.stop()
         
     def timer_handler(self):
