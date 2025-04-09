@@ -15,6 +15,8 @@ class TangoPushButton(TangoWriteWidget):
         self.widget.clicked.connect(self.clicked)
         self.widget.pressed.connect(self.pressed)
         self.widget.released.connect(self.released)
+        self.text = self.widget.text()
+
 
     # def set_widget_value(self):
     #     self.widget.setChecked(bool(self.attr.value))
@@ -44,3 +46,10 @@ class TangoPushButton(TangoWriteWidget):
                 return self.attribute.value() == self.widget.isChecked()
             else:
                 return True
+
+    def decorate_valid(self):
+        super().decorate_valid()
+        # self.widget.setStyleSheet('')
+        # self.widget.setEnabled(True)
+        self.widget.setText(self.text)
+
