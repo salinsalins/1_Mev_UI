@@ -11,6 +11,7 @@ from TangoWidgets.TangoWriteWidget import TangoWriteWidget
 
 class TangoPushButton(TangoWriteWidget):
     def __init__(self, name, widget: QPushButton, readonly=False):
+        self.text = ''
         super().__init__(name, widget, readonly)
         self.widget.clicked.connect(self.clicked)
         self.widget.pressed.connect(self.pressed)
@@ -51,5 +52,6 @@ class TangoPushButton(TangoWriteWidget):
         super().decorate_valid()
         # self.widget.setStyleSheet('')
         # self.widget.setEnabled(True)
-        self.widget.setText(self.text)
+        if self.text:
+            self.widget.setText(self.text)
 
