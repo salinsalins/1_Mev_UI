@@ -8,9 +8,9 @@ import inspect
 import os
 import sys
 
-from Configuration import Configuration
-
 if os.path.realpath('../TangoUtils') not in sys.path: sys.path.append(os.path.realpath('../TangoUtils'))
+
+from Configuration import Configuration
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
