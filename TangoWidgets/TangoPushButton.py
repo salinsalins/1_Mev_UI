@@ -41,6 +41,9 @@ class TangoPushButton(TangoWriteWidget):
             return True
         else:
             if self.widget.isCheckable():
-                return self.attribute.value() == self.widget.isChecked()
+                if self.attribute.value() == self.widget.isChecked():
+                    return True
+                self.logger.debug('Not equal value red %s', self.attribute.value())
+                return False
             else:
                 return True

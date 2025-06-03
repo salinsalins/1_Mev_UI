@@ -1,14 +1,14 @@
 # coding: utf-8
-'''
+"""
 Created on Jan 3, 2020
 
 @author: sanin
-'''
+"""
 import time
 
+import tango
 from PyQt5.QtWidgets import QLabel
 from TangoWidgets.TangoWidget import TangoWidget
-import tango
 
 
 class TangoLabel(TangoWidget):
@@ -44,7 +44,11 @@ class TangoLabel(TangoWidget):
         if self.property is None:
             super().set_widget_value()
         else:
+            # block update events for widget
+            bs = self.widget.blockSignals(True)
             self.widget.setText(str(self.property_value))
+            # restore update events for widget
+            self.widget.blockSignals(bs)
 
     def decorate(self):
         if self.property is None:

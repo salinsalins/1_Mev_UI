@@ -5,12 +5,9 @@ Created on Mar 25, 2025
 @author: sanin
 """
 
-import os
-import sys
+import Utils
 
 from TangoComboBox import TangoComboBox
-
-if os.path.realpath('../TangoUtils') not in sys.path: sys.path.append(os.path.realpath('../TangoUtils'))
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import uic
