@@ -35,11 +35,12 @@ class TangoWidget:
     def decorate_error(self, color: str = 'gray', **kwargs):
         if hasattr(self.widget, 'setText'):
             text = kwargs.get('text', TangoWidget.ERROR_TEXT)
-            self.widget.setText(text)
+            if text is not None:
+                self.widget.setText(str(text))
         self.widget.setStyleSheet('color: ' + color)
 
     def decorate_invalid(self, color: str = 'red', **kwargs):
-        self.decorate_error(color=color)
+        self.decorate_error(color=color, **kwargs)
 
     def decorate_invalid_data_format(self, color: str = 'red', text: str = None, **kwargs):
         self.decorate_invalid(text=text, color=color, **kwargs)

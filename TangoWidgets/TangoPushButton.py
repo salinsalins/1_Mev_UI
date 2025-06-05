@@ -47,3 +47,7 @@ class TangoPushButton(TangoWriteWidget):
                 return False
             else:
                 return True
+
+    def decorate_not_equal(self, color: str = 'red', **kwargs):
+        self.widget.setStyleSheet('color: ' + color)
+
