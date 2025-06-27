@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QPushButton
 from TangoWidgets.TangoAttribute import TangoAttribute
 from TangoUtils import split_attribute_name
 from TangoWidgets.TangoLED import TangoLED
+from log_exception import log_exception
 
 
 class Timer_on_LED(TangoLED):
@@ -62,22 +63,23 @@ class Timer_on_LED(TangoLED):
             max_time = 0.0
             try:
                 for i in range(len(self.enable)):
-                    self.enable[i].read_sync(True)
+                    self.enable[i].read_sync()
                     if self.enable[i].value():
-                        self.stop[i].read_sync(True)
+                        self.stop[i].read_sync()
                         max_time = max(max_time, self.stop[i].value())
                 # during pulse
                 # if self.timer_on_led.value:   # pulse is on
                 # self.logger.debug('%s %s', self.elapsed.value(), max_time)
-                if self.elapsed.value() < max_time / 1000.0:
+                self.elapsed.read()
+                if self.elapsed.value() < (max_time / 1000.0):
                     return True
                 else:  # pulse is off
                     return False
             except KeyboardInterrupt:
                 raise
             except:
-                # log_exception('********')
+                log_exception('********')
                 return False
 
     def update(self, decorate_only=False) -> None:
-        return
+        self.set_widget_value(self.check_state())
