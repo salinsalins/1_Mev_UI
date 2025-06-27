@@ -21,6 +21,8 @@ class TangoAbstractSpinBox(TangoWriteWidget):
             self.widget.valueChanged.connect(self.callback)
             self.widget.old_keyPressEvent = self.widget.keyPressEvent
             self.widget.keyPressEvent = self.keyPressEvent
+        self.read()
+        self.set_widget_value()
 
     # def update(self, decorate_only=False):
     #     super().update(decorate_only)

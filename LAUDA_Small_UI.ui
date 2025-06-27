@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>329</width>
-    <height>131</height>
+    <width>422</width>
+    <height>156</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,8 +24,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>329</width>
-    <height>131</height>
+    <width>500</width>
+    <height>200</height>
    </size>
   </property>
   <property name="font">
@@ -149,6 +149,9 @@
          <font>
           <pointsize>14</pointsize>
          </font>
+        </property>
+        <property name="currentIndex">
+         <number>2</number>
         </property>
         <item>
          <property name="text">
@@ -274,7 +277,7 @@
       <item row="0" column="3">
        <widget class="QPushButton" name="pushButton">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -287,7 +290,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>110</width>
+          <width>200</width>
           <height>35</height>
          </size>
         </property>

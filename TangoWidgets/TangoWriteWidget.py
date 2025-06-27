@@ -28,6 +28,7 @@ class TangoWriteWidget(TangoWidget):
         # self.update(decorate_only=False)
 
     def decorate_error(self, *args, **kwargs):
+        # self.logger.debug("ERROR decorated for %s", self.name)
         super().decorate_error(*args, **kwargs)
         self.widget.setEnabled(False)
 
@@ -37,7 +38,8 @@ class TangoWriteWidget(TangoWidget):
         self.widget.setEnabled(True)
 
     def decorate_valid(self):
-        self.widget.setStyleSheet('')
+        super().decorate_valid()
+        # self.widget.setStyleSheet('')
         self.widget.setEnabled(True)
 
     def update(self, decorate_only=True):

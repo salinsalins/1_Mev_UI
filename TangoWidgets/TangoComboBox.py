@@ -16,7 +16,7 @@ class TangoComboBox(TangoWriteWidget):
         super().__init__(name, widget)
         self.widget.currentIndexChanged.connect(self.callback)
 
-    def decorate_error(self):
+    def decorate_error(self, color='red'):
         self.widget.setStyleSheet('color: red')
 
     def update(self, decorate_only=True):
