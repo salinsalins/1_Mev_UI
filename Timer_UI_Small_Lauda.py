@@ -153,6 +153,10 @@ class MainWindow(QMainWindow):
         # lauda
         self.lauda = Lauda_ready_LED('binp/nbi/laudapy/', self.pushButton_30)
         self.lauda_small = Lauda_small_ready_LED('binp/nbi/lauda_small/', self.pushButton_35)
+        # self.lauda_small.decorate_error()
+        # self.lauda_small.decorate_invalid()
+        # self.lauda_small.decorate_valid()
+        # self.lauda_small.decorate_error()
         # RF system
         self.rf = RF_ready_LED('binp/nbi/timing/di60', self.pushButton_32)  # RF system ready
         # PG offset
@@ -237,30 +241,30 @@ class MainWindow(QMainWindow):
             self.pushButton_33.tango_widget.update()
             if not self.pushButton_33.isChecked():
                 result = False
-        # else:
-        #     self.pushButton_33.tango_widget.decorate_error()
+        else:
+            self.pushButton_33.tango_widget.decorate_error()
 
         if self.checkBox_20.isChecked():
             self.pushButton_30.tango_widget.update()
             if not self.pushButton_30.isChecked():
                 result = False
-        # else:
-        #     self.pushButton_30.tango_widget.decorate_error()
+        else:
+            self.pushButton_30.tango_widget.decorate_error()
 
         if self.checkBox_21.isChecked():
             self.pushButton_31.tango_widget.update()
             if not self.pushButton_31.isChecked():
                 result = False
-        # else:
-        #     self.pushButton_31.tango_widget.decorate_error()
+        else:
+            self.pushButton_31.tango_widget.decorate_error()
 
         if self.checkBox_22.isChecked():
             self.pushButton_32.tango_widget.update()
             self.pushButton_32.tango_widget.decorate()
             if not self.pushButton_32.isChecked():
                 result = False
-        # else:
-        #     self.pushButton_32.tango_widget.decorate_error()
+        else:
+            self.pushButton_32.tango_widget.decorate_error()
 
         return result
 

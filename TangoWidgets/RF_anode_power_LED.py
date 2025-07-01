@@ -21,9 +21,12 @@ class RF_anode_power_LED(TangoLED):
     def set_widget_value(self, value=None):
         try:
             if not (self.st.value() != tango.DevState.RUNNING or self.ap.value() > 50.0):
+                self.widget.setDisabled(False)
                 self.widget.setChecked(False)
             else:
+                self.widget.setDisabled(False)
                 self.widget.setChecked(True)
         except:
+            self.widget.setDisabled(False)
             self.widget.setChecked(False)
         return self.widget.isChecked()

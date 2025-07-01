@@ -41,11 +41,14 @@ class Lauda_ready_LED(TangoLED):
     def set_widget_value(self, value=None):
         try:
             if self.valve.is_valid() and self.motor.is_valid() and self.value:
+                self.widget.setDisabled(False)
                 self.widget.setChecked(True)
             else:
+                self.widget.setDisabled(False)
                 self.widget.setChecked(False)
         except KeyboardInterrupt:
             raise
         except:
+            self.widget.setDisabled(False)
             self.widget.setChecked(False)
         return self.widget.isChecked()

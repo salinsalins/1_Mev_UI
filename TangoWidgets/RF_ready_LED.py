@@ -24,9 +24,12 @@ class RF_ready_LED(TangoLED):
             if not self.av.is_valid() or self.av.value() < 8.0 or \
                     not self.cc.is_valid() or self.cc.value() < 0.1 or \
                     not self.pr.value():
+                self.widget.setDisabled(False)
                 self.widget.setChecked(False)
             else:
+                self.widget.setDisabled(False)
                 self.widget.setChecked(True)
         except:
+            self.widget.setDisabled(False)
             self.widget.setChecked(False)
         return self.widget.isChecked()

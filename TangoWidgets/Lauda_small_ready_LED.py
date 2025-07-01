@@ -43,8 +43,10 @@ class Lauda_small_ready_LED(TangoLED):
     def set_widget_value(self, value=None):
         try:
             if self.run.is_valid() and self.pressure.is_valid() and self.value:
+                self.widget.setDisabled(False)
                 self.widget.setChecked(True)
             else:
+                self.widget.setDisabled(False)
                 self.widget.setChecked(False)
         except KeyboardInterrupt:
             raise
