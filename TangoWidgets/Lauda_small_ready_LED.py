@@ -27,13 +27,14 @@ class Lauda_small_ready_LED(TangoLED):
     def read(self, force=None, sync=None):
         self.value = False
         try:
-            self.value = self.run.read(force) and (self.pressure.read(force) > self.pressure_limit)
-        # except KeyboardInterrupt:
-        #     raise
-        except DevFailed:
-            pass
-        # except:
-        #     log_exception()
+            self.value = bool(self.run.read(force) and (self.pressure.read(force) > self.pressure_limit))
+        except KeyboardInterrupt:
+            raise
+        # except DevFailed:
+        #     pass
+        except:
+            log_exception()
+        # self.logger.debug("value=%s", self.value)
         return self.value
 
     def decorate(self):
@@ -50,3 +51,10 @@ class Lauda_small_ready_LED(TangoLED):
         except:
             self.widget.setChecked(False)
         return self.widget.isChecked()
+    
+    def update(self, *args, **kwargs):
+        if self.value:
+            self.logger.debug('Update %s', self.value)
+        else:
+            self.logger.debug('Update %s', self.value)
+        super().update(*args, **kwargs)

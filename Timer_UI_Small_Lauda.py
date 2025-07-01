@@ -69,6 +69,7 @@ class MainWindow(QMainWindow):
         # Widgets definition
         self.auto_restore = self.config.get('auto_restore', True)
         self.restore = False
+        self.restore_periodical = False
         self.enable_widgets = [
             TangoCheckBox('binp/nbi/timing/channel_enable0', self.checkBox_8),  # ch0           2
             TangoCheckBox('binp/nbi/timing/channel_enable1', self.checkBox_9),  # ch1           3
@@ -224,27 +225,44 @@ class MainWindow(QMainWindow):
         pass
 
     def check_protection_interlock(self):
+        result = True
         if self.checkBox_24.isChecked():
             self.pushButton_35.tango_widget.update()
             if not self.pushButton_35.isChecked():
-                return False
+                result = False
+        else:
+            self.pushButton_35.tango_widget.decorate_error()
+
         if self.checkBox_23.isChecked():
             self.pushButton_33.tango_widget.update()
             if not self.pushButton_33.isChecked():
-                return False
+                result = False
+        # else:
+        #     self.pushButton_33.tango_widget.decorate_error()
+
         if self.checkBox_20.isChecked():
             self.pushButton_30.tango_widget.update()
             if not self.pushButton_30.isChecked():
-                return False
+                result = False
+        # else:
+        #     self.pushButton_30.tango_widget.decorate_error()
+
         if self.checkBox_21.isChecked():
             self.pushButton_31.tango_widget.update()
             if not self.pushButton_31.isChecked():
-                return False
+                result = False
+        # else:
+        #     self.pushButton_31.tango_widget.decorate_error()
+
         if self.checkBox_22.isChecked():
             self.pushButton_32.tango_widget.update()
+            self.pushButton_32.tango_widget.decorate()
             if not self.pushButton_32.isChecked():
-                return False
-        return True
+                result = False
+        # else:
+        #     self.pushButton_32.tango_widget.decorate_error()
+
+        return result
 
     def execute_button_clicked(self):
         file_name = ''
@@ -373,6 +391,9 @@ class MainWindow(QMainWindow):
             try:
                 w.last_state = w.get_widget_value()
                 self.timer_device.write_attribute(w.attribute.attribute_name, False)
+                if self.comboBox.currentIndex() == 1:  # periodical
+                    self.comboBox.setCurrentIndex(0)
+                    self.restore_periodical = True
             except KeyboardInterrupt:
                 raise
             except:
@@ -462,6 +483,19 @@ class MainWindow(QMainWindow):
                 if max_time < self.elapsed_widget.attribute.value():
                     self.set_state()
                     self.restore = False
+
+            if self.restore_periodical:
+                try:
+                    remained = self.spinBox.value() - int(self.label_3.text())
+                except KeyboardInterrupt:
+                    raise
+                except:
+                    remained = 100
+                if remained < 0:
+                    self.comboBox.setCurrentIndex(1)
+                    self.restore_periodical = False
+                    self.logger.info('Periodical shooting restored')
+
             if self.is_pulse_on():
                 self.pushButton.setStyleSheet('color: red; font: bold')
                 self.pushButton.setText('Stop')

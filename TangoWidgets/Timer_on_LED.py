@@ -61,6 +61,8 @@ class Timer_on_LED(TangoLED):
             return state
         else:
             max_time = 0.0
+            if self.elapsed is None:
+                return False
             try:
                 for i in range(len(self.enable)):
                     self.enable[i].read_sync()
