@@ -155,7 +155,8 @@ class TangoAttribute:
             raise TangoAttributeConnectionFailed(msg)
 
     def read(self, sync=True, **kwargs):
-        if time.time() - self.read_result.time.totime() < self.read_valid_time:
+        force = kwargs.get('force_read', False)
+        if not force and (time.time() - self.read_time < self.read_valid_time):
             if self.is_valid():
                 return self.value()
         if not self.reconnect():
@@ -193,6 +194,7 @@ class TangoAttribute:
 
     def read_sync(self):
         self.read_result = self.device_proxy.read_attribute(self.attribute_name)
+        self.read_time = time.time()
         # self.logger.debug('*** sync %s %s', self.read_result.time.totime(), time.time() - self.history_valid_time)
         return self.value()
 
@@ -200,13 +202,19 @@ class TangoAttribute:
         if self.read_call_id is None:
             self.read_time = time.time()
             self.read_call_id = self.device_proxy.read_attribute_asynch(self.attribute_name)
+            # self.logger.debug('async read requested for %s id=%s', self.full_name, self.read_call_id)
         try:
             # check if read request complete (Exception if not completed or error)
             self.read_result = self.device_proxy.read_attribute_reply(self.read_call_id)
+            self.read_time = time.time()
+            # self.logger.debug('async arrived for %s id=%s V=%s dt=%s s', self.full_name, self.read_call_id, self.read_result.value, self.read_result.time.totime()-self.read_time)
             self.read_call_id = None
-            # self.logger.debug('*** async %s %s', self.read_result.time.totime(), time.time() - self.history_valid_time)
+            # result_sync = self.device_proxy.read_attribute(self.attribute_name)
+            # self.logger.debug('sync for %s V=%s td=%s s', self.full_name, result_sync.value, result_sync.time.totime()-self.read_time)
+            # self.logger.debug('read_async %s %s V=%s', self.read_result.time.totime(), time.time() - self.history_valid_time, self.read_result.value)
             return self.value()
         except tango.AsynReplyNotArrived:
+            # self.logger.debug('async reply not arrived for id=%s', self.read_call_id)
             if time.time() - self.read_time > self.read_timeout:
                 self.logger.warning('Timeout reading %s', self.full_name)
                 self.cancel_asynch_request(self.read_call_id)

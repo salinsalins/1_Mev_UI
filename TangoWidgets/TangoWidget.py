@@ -30,7 +30,7 @@ class TangoWidget:
         # create attribute proxy
         self.attribute = TangoAttribute(name, logger=self.logger, readonly=readonly, **kwargs)
         # first update
-        self.update(decorate_only=False)
+        self.update(decorate_only=False, sync=True, force_read=True)
 
     def decorate_error(self, color: str = 'gray', **kwargs):
         if hasattr(self.widget, 'setText'):
@@ -80,11 +80,11 @@ class TangoWidget:
         # restore update events for widget
         self.widget.blockSignals(bs)
 
-    def update(self, decorate_only=None) -> None:
+    def update(self, decorate_only=None, **kwargs) -> None:
         if decorate_only is None:
             decorate_only = self.decorate_only
         try:
-            self.read()
+            self.read(**kwargs)
             if not decorate_only:
                 self.set_widget_value()
             self.decorate()

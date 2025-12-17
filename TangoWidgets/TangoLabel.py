@@ -30,11 +30,11 @@ class TangoLabel(TangoWidget):
         except:
             self.property_value = 'No_label'
 
-    def read(self, force=None, sync=None):
+    def read(self, force=None, sync=None, **kwargs):
         if self.property is None:
-            super().read(sync=sync)
+            super().read(sync=sync, **kwargs)
             return
-        if time.time() - self.attribute.read_result.time.totime() < self.attribute.read_valid_time:
+        if time.time() - self.attribute.read_time < self.attribute.read_valid_time:
             return
         if self.refresh or self.property_value is None:
             self.read_property()

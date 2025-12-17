@@ -25,7 +25,7 @@ class TangoMultiAttributeWidget(TangoWidget):
                 self.tango_attributes[attr] = TangoAttribute(attr, level=level, readonly=readonly)
         self.update(decorate_only=False)
 
-    def read(self, force=False):
+    def read(self, force=False, **kwargs):
         if not self.connected:
             raise ConnectionError('Attribute disconnected')
         try:
@@ -89,7 +89,7 @@ class TangoMultiAttributeWidget(TangoWidget):
                 self.widget.setText(text)
         self.widget.blockSignals(bs)
 
-    def update(self, decorate_only=False) -> None:
+    def update(self, decorate_only=False, **kwargs) -> None:
         t0 = time.time()
         try:
             self.read()

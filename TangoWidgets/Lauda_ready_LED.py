@@ -23,7 +23,7 @@ class Lauda_ready_LED(TangoLED):
         super().__init__(pump_name, widget)
         # self.motor = self.attribute  # Lauda pump motor
 
-    def read(self, force=None, sync=None):
+    def read(self, force=None, sync=None, **kwargs):
         self.value = False
         try:
             self.value = self.motor.read(force) and self.valve.read(force)

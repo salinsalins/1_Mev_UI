@@ -24,7 +24,7 @@ class Lauda_small_ready_LED(TangoLED):
         super().__init__(pressure_name, widget)
         # self.motor = self.attribute  # Lauda pump motor
 
-    def read(self, force=None, sync=None):
+    def read(self, force=None, sync=None, **kwargs):
         self.value = False
         try:
             self.value = bool(self.run.read(force) and (self.pressure.read(force) > self.pressure_limit))
@@ -55,8 +55,8 @@ class Lauda_small_ready_LED(TangoLED):
         return self.widget.isChecked()
     
     def update(self, *args, **kwargs):
-        if self.value:
-            self.logger.debug('Update %s', self.value)
-        else:
-            self.logger.debug('Update %s', self.value)
+        # if self.value:
+        #     self.logger.debug('Update %s', self.value)
+        # else:
+        #     self.logger.debug('Update %s', self.value)
         super().update(*args, **kwargs)

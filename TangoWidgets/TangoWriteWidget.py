@@ -42,7 +42,7 @@ class TangoWriteWidget(TangoWidget):
         # self.widget.setStyleSheet('')
         self.widget.setEnabled(True)
 
-    def update(self, decorate_only=True):
+    def update(self, decorate_only=True, **kwargs):
         super().update(decorate_only=decorate_only)
 
     # compare widget displayed value and read attribute value

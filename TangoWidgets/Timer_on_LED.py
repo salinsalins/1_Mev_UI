@@ -83,5 +83,5 @@ class Timer_on_LED(TangoLED):
                 log_exception('********')
                 return False
 
-    def update(self, decorate_only=False) -> None:
+    def update(self, decorate_only=False, **kwargs) -> None:
         self.set_widget_value(self.check_state())
