@@ -37,6 +37,8 @@ class TangoWidget:
             text = kwargs.get('text', TangoWidget.ERROR_TEXT)
             if text is not None:
                 self.widget.setText(str(text))
+        clr = kwargs.get('color', 'gray')
+        stylestr = kwargs.get('style', 'color: ' + clr)
         self.widget.setStyleSheet('color: ' + color)
 
     def decorate_invalid(self, color: str = 'red', **kwargs):
