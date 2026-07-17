@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
         self.wtwdgts = (
             TangoPushButton("binp/nbi/PETchkd/do05", self.pushButton_3, False),
             TangoPushButton("binp/nbi/PETchkd/do04", self.pushButton_4, False),
+            TangoPushButton("binp/nbi/ckd/error_state", self.pushButton_5, False),
             TangoSpinBox("binp/nbi/ckd/set_voltage", self.spinBox, False),
             TangoSpinBox("binp/nbi/ckd/set_current", self.spinBox_2, False),
         )
